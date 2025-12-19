@@ -7,14 +7,15 @@
   "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "Pedscals.jpg",
+      "src": "Pedscals.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "Pedscals.jpg",
+      "src": "Pedscals.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
+
