@@ -17,16 +17,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-          /* iOS PWA 專用修正 (加強版) */
+        /* iOS PWA 專用修正 (加強版) */
         /* 使用 !important 強制覆蓋系統預設值，並移除 iOS 預設渲染樣式 */
-        input, select, textarea {
+        input,
+        select,
+        textarea {
             -webkit-user-select: text !important;
             user-select: text !important;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            border-radius: 0.5rem; /* 確保圓角樣式不跑版 */
+            border-radius: 0.5rem;
+            /* 確保圓角樣式不跑版 */
         }
+
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
         body {
@@ -1160,6 +1164,20 @@
         }
 
         function addListeners() {
+            // --- [新增] iOS PWA 強制喚醒鍵盤修正 ---
+            // 針對這三個輸入框，強制在點擊時觸發 focus() 以彈出鍵盤
+            const inputs = [els.ageInput, els.weightInput, els.neonateWeightInput];
+            inputs.forEach(input => {
+                // 1. 攔截 touchstart 防止被外層容器吃掉事件
+                input.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                // 2. 點擊時強制聚焦
+                input.addEventListener('click', (e) => {
+                    e.target.focus();
+                });
+            });
             els.patientType.addEventListener('change', (e) => {
                 state.patientType = e.target.value;
                 updateInputVisibility();
@@ -1279,5 +1297,3 @@
 </body>
 
 </html>
-
-
