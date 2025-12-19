@@ -1164,18 +1164,13 @@
         }
 
         function addListeners() {
-            // --- [新增] iOS PWA 強制喚醒鍵盤修正 ---
-            // 針對這三個輸入框，強制在點擊時觸發 focus() 以彈出鍵盤
+            // --- [修正] iOS PWA 強制喚醒鍵盤 (V2) ---
+            // 改用 touchend 事件：這在 iOS 手機版 PWA 最為強效，手指一放開就強制鎖定游標
             const inputs = [els.ageInput, els.weightInput, els.neonateWeightInput];
             inputs.forEach(input => {
-                // 1. 攔截 touchstart 防止被外層容器吃掉事件
-                input.addEventListener('touchstart', (e) => {
-                    e.stopPropagation();
-                }, { passive: true });
-
-                // 2. 點擊時強制聚焦
-                input.addEventListener('click', (e) => {
-                    e.target.focus();
+                input.addEventListener('touchend', (e) => {
+                    // 防止 iOS 鍵盤彈出後又縮回，或點擊失效
+                    e.target.focus(); 
                 });
             });
             els.patientType.addEventListener('change', (e) => {
@@ -1297,3 +1292,4 @@
 </body>
 
 </html>
+
