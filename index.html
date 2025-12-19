@@ -17,10 +17,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 修正 iOS PWA 安裝後無法輸入數字的問題 */
+          /* iOS PWA 專用修正 (加強版) */
+        /* 使用 !important 強制覆蓋系統預設值，並移除 iOS 預設渲染樣式 */
         input, select, textarea {
-            -webkit-user-select: text;
-            user-select: text;
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: 0.5rem; /* 確保圓角樣式不跑版 */
         }
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
@@ -1274,4 +1279,5 @@
 </body>
 
 </html>
+
 
