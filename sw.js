@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedscalc-v1';
+const CACHE_NAME = 'pedscalc-v2';
 
 // 注意：這裡的檔名必須與您的 HTML 實際檔名完全一致
 const ASSETS = [
@@ -27,3 +27,4 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
