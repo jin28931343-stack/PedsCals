@@ -116,7 +116,7 @@
 
                     <div id="inputContainerWeight" class="hidden">
                         <div class="relative">
-                            <input type="number" id="weightInput" placeholder="輸入體重"
+                            <input type="number" id="weightInput" max="100" placeholder="輸入體重 (Max 100)"
                                 class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             <span class="absolute right-3 top-2 text-gray-400 text-sm">kg</span>
                         </div>
@@ -1059,10 +1059,19 @@
             });
 
             els.weightInput.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                
+                // [修改] 限制兒童體重輸入上限 100kg
+                if (val > 100) {
+                    val = 100;
+                    e.target.value = 100;
+                }
+                
                 state.weightInput = e.target.value;
                 updateStateWeight();
                 calculate();
             });
+
             els.neonateWeightInput.addEventListener('input', (e) => {
                 let val = parseFloat(e.target.value);
 
@@ -1118,6 +1127,5 @@
 
     </script>
 </body>
-
 
 </html>
