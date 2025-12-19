@@ -2,8 +2,9 @@ const CACHE_NAME = 'pedscalc-v1';
 
 // 注意：這裡的檔名必須與您的 HTML 實際檔名完全一致
 const ASSETS = [
-  './index.html',      // 主程式 (已更新)
+  './index.html',      // 主程式
   './manifest.json',   // 清單檔
+  './Pedscals.jpg',    // 新增：加入圖片快取
   'https://cdn.tailwindcss.com', // 外部資源
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
