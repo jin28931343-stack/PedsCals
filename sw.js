@@ -4,7 +4,7 @@ const CACHE_NAME = 'pedscalc-v2';
 const ASSETS = [
   './index.html',      // 主程式
   './manifest.json',   // 清單檔
-  './Pedscals.jpg',    // 新增：加入圖片快取
+  './Pedscals.png',    // 新增：加入圖片快取
   'https://cdn.tailwindcss.com', // 外部資源
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
@@ -27,4 +27,5 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
 
