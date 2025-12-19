@@ -6,9 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PedsCalc 劑量換算助手</title>
     
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PedsCalc">
+    <link rel="apple-touch-icon" href="icon-192.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -79,7 +83,11 @@
                 <i class="fa-solid fa-user-doctor text-2xl"></i>
                 <h1 class="text-xl font-bold tracking-wide">PedsCalc</h1>
             </div>
-            <div class="flex flex-col items-end">
+            <div class="flex items-center gap-3">
+                <!-- Install Button (Hidden by default, shown via JS) -->
+                <button id="btnInstallApp" class="hidden bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow hover:bg-blue-50 transition-colors flex items-center gap-1">
+                    <i class="fas fa-download"></i> <span class="hidden sm:inline">安裝</span>
+                </button>
                 <span class="text-xs bg-blue-800 px-2 py-1 rounded shadow-inner">v114.12.19</span>
             </div>
         </div>
@@ -320,15 +328,13 @@
         </div>
     </footer>
 
-    <!-- Disclaimer Modal (Floating Window) -->
+    <!-- Disclaimer Modal -->
     <div id="modalDisclaimer" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative modal-animate-slide border border-gray-200 flex flex-col max-h-[90vh]">
-            <!-- Close X Button -->
             <button id="btnCloseModal" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2">
                 <i class="fas fa-times text-xl"></i>
             </button>
             
-            <!-- Modal Content -->
             <div class="text-center mb-4 flex-shrink-0">
                 <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
                     <i class="fas fa-info-circle text-2xl"></i>
@@ -348,10 +354,66 @@
                 </div>
             </div>
 
-            <!-- Confirm Button -->
             <div class="mt-6 flex-shrink-0">
                 <button id="btnConfirmModal" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg active:transform active:scale-95 flex items-center justify-center">
                     <i class="fas fa-check-circle mr-2"></i> 我瞭解了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Instruction Modal (iOS/Manual) -->
+    <div id="modalInstallInstruction" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative modal-animate-slide border border-gray-200">
+            <button id="btnCloseInstall" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl">
+                    <i class="fas fa-user-doctor"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">安裝 PedsCalc</h3>
+                <p class="text-sm text-gray-500 mt-1">將此 App 加入主畫面以便離線使用</p>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- iOS Instructions -->
+                <div id="iosInstructions" class="hidden">
+                    <ol class="text-sm text-gray-600 space-y-3 leading-relaxed">
+                        <li class="flex items-start">
+                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">1</span>
+                            <span>點擊瀏覽器下方的分享按鈕 <img src="https://img.icons8.com/ios/50/000000/upload--v1.png" class="w-5 h-5 inline align-middle opacity-70"></span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">2</span>
+                            <span>往下滑動並選擇「加入主畫面」<br><span class="text-xs text-gray-400">(Add to Home Screen)</span></span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">3</span>
+                            <span>點擊右上角的「加入」即可。</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Android/Other Instructions (Fallback) -->
+                <div id="androidInstructions" class="hidden">
+                    <ol class="text-sm text-gray-600 space-y-3 leading-relaxed">
+                        <li class="flex items-start">
+                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">1</span>
+                            <span>點擊瀏覽器右上角的選單圖示 <i class="fas fa-ellipsis-v text-gray-400 mx-1"></i></span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">2</span>
+                            <span>選擇「安裝應用程式」或「加到主畫面」。</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                 <button id="btnCloseInstallConfirm" class="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition">
+                    關閉
                 </button>
             </div>
         </div>
@@ -372,7 +434,6 @@
             9: 28
         };
 
-        // Define available routes structure for dynamic filtering
         const routesData = [
             { value: 'iv_io', text: 'IV/IO (靜脈/骨內)' },
             { value: 'im', text: 'IM (肌肉注射)' },
@@ -380,29 +441,21 @@
             { value: 'iv', text: 'IV (靜脈)' }
         ];
 
-        // Database of Medications and Settings
         const database = {
             medications: [
                 { id: 'epi', name: 'Epinephrine (1:10000)', dose: 0.01, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.1, volUnit: 'ml/kg (1:10000)', route: ['iv_io'], max: '1 mg (Adult)', note: '心跳停止時每 3-5 分鐘給予' },
                 { id: 'epi_im', name: 'Epinephrine (1:1000)', dose: 0.01, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.01, volUnit: 'ml/kg (1:1000)', route: ['im'], max: '0.5 mg (Adult)', note: '過敏性休克使用' },
-
-                // [修改] 增加 volConc: 0.1 (對應 1:1000 濃度) 以顯示參考體積
                 { id: 'epi_endo', name: 'Epinephrine (Endo)', dose: 0.1, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.1, volUnit: 'ml/kg', route: ['endo'], max: '2.5 mg', note: '氣管內管給藥: 建議劑量 0.1 mg/kg (IV 劑量的 10 倍)用3~5ml生理食鹽水按壓甦醒球5次。' },
-
                 { id: 'amio', name: 'Amiodarone', dose: 5, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.1, volUnit: 'ml/kg', route: ['iv_io'], max: '300 mg (Adult)', note: '可再重複兩次(總共三次)，最大總劑量 15 mg/kg' },
 
             ],
             shocks: [
-                // 去顫電擊 (Defibrillation)
                 { id: 'defib_2j', name: 'Defibrillation (第一次去顫電擊) 2 J/kg', dose: 2, unit: 'J/kg', resultUnit: 'Joules', max: '200 J (Adult Biphasic)', note: '第一次電擊' },
                 { id: 'defib_4j', name: 'Defibrillation (第二次去顫電擊) 4 J/kg', dose: 4, unit: 'J/kg', resultUnit: 'Joules', max: '200 J (Adult Biphasic)', note: '第二次及後續電擊' },
-
-
             ],
             intubations: [
                 { id: 'ett_uncuffed', name: 'ETT Size (Uncuffed)', unit: 'mm ID', note: '公式: (年齡/4) + 4，無氣囊' },
                 { id: 'ett_cuffed', name: 'ETT Size (Cuffed)', unit: 'mm ID', note: '公式: (年齡/4) + 3.5，有氣囊' },
-                // 修改: 名稱已改為 "插管深度"
                 { id: 'ett_depth', name: 'Insertion Depth (Lip)', unit: 'cm', note: '鼻耳(鼻中膈-耳屏+1cm)；號數*3 ; 12+(age/2)' },
                 { id: 'blade', name: 'Laryngoscope Blade', unit: 'Size', note: '喉鏡葉片建議尺寸' }
             ]
@@ -436,7 +489,7 @@
             neonateWeightInput: document.getElementById('neonateWeightInput'),
             estWeightDisplay: document.getElementById('estWeightDisplay'),
             interventionType: document.getElementById('interventionType'),
-            reservedCategory: document.getElementById('reservedCategory'), // Added
+            reservedCategory: document.getElementById('reservedCategory'),
             routeType: document.getElementById('routeType'),
             routeOverlay: document.getElementById('routeOverlay'),
             specificItem: document.getElementById('specificItem'),
@@ -454,129 +507,184 @@
             refEttUncuffed: document.getElementById('refEttUncuffed'),
             refEttCuffed: document.getElementById('refEttCuffed'),
             refEttDepth: document.getElementById('refEttDepth'),
-            refBlade: document.getElementById('refBlade')
+            refBlade: document.getElementById('refBlade'),
+            // Install Button
+            btnInstallApp: document.getElementById('btnInstallApp')
         };
 
         // --- 4. Logic Functions ---
 
         function init() {
             updateInputVisibility();
-            updateRouteOptions(); // Initialize route options
+            updateRouteOptions();
             updateInterventionUI();
             addListeners();
             calculate();
-            // registerServiceWorker(); // Disabled for WebApp preview
+            registerServiceWorker(); // PWA Registration
+            initInstallPrompt(); // Handle Install Button
         }
 
-        // New function to handle route options based on category
+        // PWA: Service Worker Registration
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(registration => {
+                            console.log('SW Registered');
+                        }, err => {
+                            console.log('SW Registration Failed: ', err);
+                        });
+                });
+            }
+        }
+
+        // PWA: Install Prompt Logic
+        let deferredPrompt;
+        function initInstallPrompt() {
+            const btn = els.btnInstallApp;
+            const modalInstall = document.getElementById('modalInstallInstruction');
+            const btnCloseInstall = document.getElementById('btnCloseInstall');
+            const btnCloseInstallConfirm = document.getElementById('btnCloseInstallConfirm');
+            const iosInstructions = document.getElementById('iosInstructions');
+            const androidInstructions = document.getElementById('androidInstructions');
+
+            // Detect iOS
+            const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            // Detect if already standalone (installed)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            // Always show button on iOS if not installed (since iOS doesn't fire event)
+            if (isIos && !isStandalone) {
+                btn.classList.remove('hidden');
+            }
+
+            // Android/Chrome: Capture the event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later.
+                deferredPrompt = e;
+                // Update UI to notify the user they can add to home screen
+                btn.classList.remove('hidden');
+            });
+
+            // Handle Button Click
+            btn.addEventListener('click', (e) => {
+                if (deferredPrompt) {
+                    // Show the prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the A2HS prompt');
+                            btn.classList.add('hidden'); // Hide button after install
+                        } else {
+                            console.log('User dismissed the A2HS prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                } else {
+                    // Manual Instructions needed (iOS or Fallback)
+                    modalInstall.classList.remove('hidden');
+                    if (isIos) {
+                        iosInstructions.classList.remove('hidden');
+                        androidInstructions.classList.add('hidden');
+                    } else {
+                        androidInstructions.classList.remove('hidden');
+                        iosInstructions.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Close Modal Logic
+            function closeInstallModal() {
+                modalInstall.classList.add('hidden');
+            }
+            if (btnCloseInstall) btnCloseInstall.addEventListener('click', closeInstallModal);
+            if (btnCloseInstallConfirm) btnCloseInstallConfirm.addEventListener('click', closeInstallModal);
+            
+            // Hide button if installed
+            if (isStandalone) {
+                btn.classList.add('hidden');
+            }
+        }
+
+
         function updateRouteOptions() {
-            // 1. Handling for Sedation (Block everything)
             if (state.category === 'sedation') {
                 els.routeType.innerHTML = '<option value="">未開放</option>';
                 els.routeType.disabled = true;
-
-                // Force specific item to close via populateSpecificItems later, 
-                // but let's ensure state is clear here too.
                 state.route = '';
-
                 populateSpecificItems();
                 return;
             }
 
-            // 2. Normal Logic for Arrest/General
-            // Define available routes based on Category
             let allowedRoutes = [];
-
             if (state.category === 'arrest') {
-                allowedRoutes = ['iv_io', 'endo']; // Arrest: Only IV/IO and Endo (Removed IM)
+                allowedRoutes = ['iv_io', 'endo'];
             } else if (state.category === 'general') {
-                allowedRoutes = ['im', 'iv']; // Only IM for General Emergency
+                allowedRoutes = ['im', 'iv'];
             }
 
-            // Save current selection to try and preserve it if possible
             const currentSelection = els.routeType.value;
-
-            // Clear and Rebuild Options
             els.routeType.innerHTML = '';
 
             routesData.forEach(r => {
                 if (allowedRoutes.includes(r.value)) {
                     const opt = document.createElement('option');
                     opt.value = r.value;
-                    
-                    // [修改] 新生兒 IV/IO 顯示名稱改為 UVC/IO
                     if (state.patientType === 'neonate' && r.value === 'iv_io') {
                         opt.text = 'UVC/IO(臍靜脈/骨內)';
                     } else {
                         opt.text = r.text;
                     }
-                    
                     els.routeType.appendChild(opt);
                 }
             });
 
-            // Set Value
             if (currentSelection && allowedRoutes.includes(currentSelection)) {
                 els.routeType.value = currentSelection;
             } else {
                 els.routeType.value = allowedRoutes[0];
             }
-
-            // Re-enable if it was disabled by sedation previously (and not currently shock/intubation)
-            // The actual enabled/disabled state for shock/intubation is handled by updateInterventionUI
-            // We just ensure options are correct here.
-
-            // Update State
             state.route = els.routeType.value;
-
-            // Refresh downstream
             populateSpecificItems();
-
-            // REMOVED: updateInterventionUI() here to prevent recursive loop with the new logic
         }
 
         function updateInputVisibility() {
-            // --- 新增邏輯：如果是新生兒，隱藏電擊選項與限制分類 ---
             const shockOption = els.interventionType.querySelector('option[value="shock"]');
             const generalOption = els.reservedCategory.querySelector('option[value="general"]');
             const sedationOption = els.reservedCategory.querySelector('option[value="sedation"]');
             
             if (state.patientType === 'neonate') {
-                // 1. 隱藏電擊選項
                 if (shockOption) {
                     shockOption.hidden = true;
                     shockOption.disabled = true;
                 }
-                // 如果目前剛好選在電擊，強制切回給藥
                 if (state.intervention === 'shock') {
                     state.intervention = 'medication';
                     els.interventionType.value = 'medication';
-                    updateInterventionUI(); // 確保 UI 連動更新
+                    updateInterventionUI();
                 }
 
-                // 2. [新增] 隱藏一般急救與鎮靜止痛 (只保留心肺功能停止)
                 if (generalOption) generalOption.hidden = true;
                 if (sedationOption) sedationOption.hidden = true;
 
-                // 若目前選在被隱藏的分類，強制切回心肺功能停止
                 if (state.category === 'general' || state.category === 'sedation') {
                     state.category = 'arrest';
                     els.reservedCategory.value = 'arrest';
-                    updateRouteOptions(); // 更新給藥途徑選單
-                    updateInterventionUI(); // 更新 UI 狀態
+                    updateRouteOptions();
+                    updateInterventionUI();
                 }
 
             } else {
-                // 兒童模式則恢復顯示
                 if (shockOption) {
                     shockOption.hidden = false;
                     shockOption.disabled = false;
                 }
-                // [新增] 恢復分類選項
                 if (generalOption) generalOption.hidden = false;
                 if (sedationOption) sedationOption.hidden = false;
             }
-            // --- 結束新增邏輯 ---
 
             if (state.patientType === 'neonate') {
                 els.childInputGroup.classList.add('hidden');
@@ -608,12 +716,9 @@
             if (!age || age < 0) return 0;
             const ageNum = parseFloat(age);
             const roundedAge = Math.round(ageNum);
-
-            // Chart lookup for 1-9
             if (roundedAge >= 1 && roundedAge <= 9) {
                 if (weightChart[roundedAge]) return weightChart[roundedAge];
             }
-            // Formula
             if (ageNum < 1) return (ageNum * 12 * 0.5) + 4;
             if (ageNum > 9) return (ageNum * 3) + 7;
             return (ageNum + 4) * 2;
@@ -635,28 +740,20 @@
         }
 
         function updateInterventionUI() {
-            // 0. Handle Category Availability based on Intervention
             if (state.intervention === 'shock') {
-                // Change Category to "N/A" and disable
                 els.reservedCategory.innerHTML = '<option value="">不適用</option>';
                 els.reservedCategory.disabled = true;
                 state.category = 'na';
             }
             else if (state.intervention === 'intubation') {
-                // Change Category to "Cardiac Arrest" only and disable
                 els.reservedCategory.innerHTML = '<option value="arrest">心肺功能停止</option>';
                 els.reservedCategory.value = 'arrest';
                 els.reservedCategory.disabled = true;
                 state.category = 'arrest';
-
-                // Ensure routes match "Arrest" category (IV/IO, Endo)
                 updateRouteOptions();
             }
             else {
-                // Intervention is Medication
-                // Restore Category if it was disabled (i.e., coming from Shock/Intubation)
                 if (els.reservedCategory.disabled) {
-                    // [修改] 恢復時需檢查是否為新生兒，若是則需隱藏特定選項
                     const isNeonate = state.patientType === 'neonate';
                     els.reservedCategory.innerHTML = `
                         <option value="arrest">心肺功能停止</option>
@@ -664,14 +761,12 @@
                         <option value="sedation" ${isNeonate ? 'hidden' : ''}>鎮靜止痛</option>
                     `;
                     els.reservedCategory.disabled = false;
-                    // Reset to default
                     els.reservedCategory.value = 'arrest';
                     state.category = 'arrest';
-                    updateRouteOptions(); // Re-populate routes based on restored category
+                    updateRouteOptions();
                 }
             }
 
-            // Priority Check: Sedation
             if (state.category === 'sedation') {
                 els.routeOverlay.classList.add('hidden');
                 els.routeType.disabled = true;
@@ -694,18 +789,12 @@
 
         function populateSpecificItems() {
             els.specificItem.innerHTML = '';
-
-            // 1. Handling for Sedation
             if (state.category === 'sedation') {
                 els.specificItem.innerHTML = '<option value="">未開放</option>';
                 els.specificItem.disabled = true;
-
-                // Clear Results
                 state.selectedItemId = '';
                 els.resultValue.innerText = '---';
                 els.resultDetail.innerText = '此功能尚未開放';
-
-                // Clear Info
                 els.infoStandard.innerText = '---';
                 els.infoMax.innerText = '---';
                 els.infoNote.innerText = '---';
@@ -713,17 +802,12 @@
                 return;
             }
 
-            // 修改: 新增「一般急救」選擇「IV」時顯示未開放
             if (state.category === 'general' && state.route === 'iv') {
                 els.specificItem.innerHTML = '<option value="">未開放</option>';
                 els.specificItem.disabled = true;
-
-                // Clear Results
                 state.selectedItemId = '';
                 els.resultValue.innerText = '---';
                 els.resultDetail.innerText = '此功能尚未開放';
-
-                // Clear Info
                 els.infoStandard.innerText = '---';
                 els.infoMax.innerText = '---';
                 els.infoNote.innerText = '---';
@@ -731,10 +815,7 @@
                 return;
             }
 
-
-            // Normal Logic
             els.specificItem.disabled = false;
-
             let items = [];
             if (state.intervention === 'shock') {
                 items = database.shocks;
@@ -744,7 +825,6 @@
                 items = database.medications.filter(med => med.route.includes(state.route));
             }
 
-            // [新增] 若為新生兒，從藥物清單中移除 Amiodarone
             if (state.patientType === 'neonate') {
                 items = items.filter(i => i.id !== 'amio');
             }
@@ -789,7 +869,6 @@
 
             if (!item) return;
 
-            // Reset font size
             els.resultValue.classList.remove('text-3xl', 'text-2xl', 'md:text-4xl');
             els.resultValue.classList.add('text-5xl', 'md:text-6xl');
 
@@ -798,104 +877,69 @@
                 return;
             }
 
-            // --- 新增: 新生兒 Epinephrine (IV/IO) 特殊邏輯 (0.01 ~ 0.03 mg/kg) ---
             if (state.patientType === 'neonate' && item.id === 'epi') {
-                // 調整字體大小以容納三個數值
                 els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
                 els.resultValue.classList.add('text-3xl', 'md:text-4xl');
-
-                // 計算 0.01, 0.02, 0.03 的劑量
                 const multipliers = [0.01, 0.02, 0.03];
                 const results = multipliers.map(m => state.finalWeight * m);
-                
-                // 格式化顯示數值
                 const resultText = results.map(v => {
                     let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
                     return parseFloat(s);
                 }).join(' / ');
-
                 els.resultValue.innerText = resultText;
                 els.resultUnit.innerText = item.resultUnit;
-
-                // 計算對應體積
                 const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
                 els.resultDetail.innerText = `參考體積: ${volumes} ml (約 ${volumes} c.c.)`;
-
-                // 更新資訊欄位
                 els.infoStandard.innerText = "0.01 ~ 0.03 mg/kg (1:10000)";
-                // [修改] 新生兒最大劑量改為 "無"
                 els.infoMax.innerText = "無";
                 els.infoNote.innerText = item.note;
             } 
-            // --- [新增] 新生兒 Epinephrine (Endo) 特殊邏輯 (0.05 ~ 0.1 mg/kg) ---
             else if (state.patientType === 'neonate' && item.id === 'epi_endo') {
-                // 調整字體大小
                 els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
                 els.resultValue.classList.add('text-3xl', 'md:text-4xl');
-
-                // 計算 0.05, 0.1 的劑量
                 const multipliers = [0.05, 0.1];
                 const results = multipliers.map(m => state.finalWeight * m);
-                
-                // 格式化顯示數值
                 const resultText = results.map(v => {
                     let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
                     return parseFloat(s);
                 }).join(' / ');
-
                 els.resultValue.innerText = resultText;
                 els.resultUnit.innerText = item.resultUnit;
-
-                // 計算對應體積 (濃度 1:10000 = 0.1 mg/ml) -> 0.5ml/kg, 1ml/kg
                 const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
-                
                 els.resultDetail.innerText = `參考體積: ${volumes} ml (約 ${volumes} c.c.)`;
-
                 els.infoStandard.innerText = "0.05mg/kg~0.1mg/kg(1:10000)";
                 els.infoMax.innerText = "無";
                 els.infoNote.innerText = "氣管內管給藥";
             }
             else {
-                // --- 原有一般計算邏輯 ---
                 let val = state.finalWeight * item.dose;
-
-                // Check Max dose logic (Explicit Adult Cap)
                 let isCapped = false;
                 let maxVal = parseFloat(item.max);
-
                 if (!isNaN(maxVal) && val > maxVal) {
                     val = maxVal;
                     isCapped = true;
                 }
-
                 let displayVal = val < 1 ? val.toFixed(2) : val.toFixed(1);
                 if (Number.isInteger(parseFloat(displayVal))) {
                     displayVal = parseInt(displayVal);
                 }
-
                 els.resultValue.innerText = displayVal;
                 els.resultUnit.innerText = item.resultUnit;
-
-                // Extra details
                 if (state.intervention === 'medication' && item.volConc) {
                     let vol = (val / (item.dose / item.volConc)).toFixed(1);
                     els.resultDetail.innerText = `參考體積: 約 ${vol} ml (約 ${vol} c.c.)`;
                 } else {
                     els.resultDetail.innerText = isCapped ? '(已達成人/最大建議劑量)' : `計算公式: ${state.finalWeight.toFixed(1)}kg × ${item.dose} ${item.unit}`;
                 }
-
                 if (item.id === 'epi') {
                      els.infoStandard.innerText = `${item.dose} ${item.unit} (1:10000)`;
                 } else {
                      els.infoStandard.innerText = `${item.dose} ${item.unit}`;
                 }
-                
-                // [移入] 確保一般邏輯設定這兩項，避免被上方特殊邏輯後的程式碼覆蓋
                 els.infoMax.innerText = item.max;
                 els.infoNote.innerText = item.note;
             }
 
-            // Update Site Info
             if (state.intervention === 'shock') {
                 els.infoSite.innerText = "使用兒童貼片，若無則使用大人貼片 (前胸後背)";
                 els.infoSite.parentElement.classList.remove('hidden');
@@ -903,7 +947,6 @@
                 els.infoSite.innerText = "第一優先:大腿前外側肌 / 第二優先:肩峰下三指幅三角肌";
                 els.infoSite.parentElement.classList.remove('hidden');
             } else if (state.route === 'iv_io') {
-                // [修改] 區分新生兒與兒童的建議部位資訊
                 if (state.patientType === 'neonate') {
                     els.infoSite.innerText = "UVC / IO (Distal femur / 遠端股骨、Proximal tibia / 近端脛骨、Distal tibia / 遠端脛骨。)";
                 } else {
@@ -918,16 +961,12 @@
             }
         }
 
-        // 請替換原本整段 calculateIntubation 函式
         function calculateIntubation(item) {
             let result = '';
             let note = item.note;
-
-            // [新增] 新生兒插管深度特殊注意事項
             if (state.patientType === 'neonate' && item.id === 'ett_depth') {
                 note = "1.體重+6。2.鼻耳(鼻中膈-耳屏+1cm)。";
             }
-
             const calcAge = getCalculatedAge();
 
             if (item.id === 'blade') {
@@ -935,13 +974,10 @@
                 else if (calcAge < 2) result = '1 (Straight)';
                 else if (calcAge < 5) result = '1.5 - 2';
                 else result = '2 - 3';
-
                 els.resultValue.innerText = result;
             }
             else if (item.id.includes('ett') && !item.id.includes('depth')) {
-                // Calculate Base Uncuffed Size first
                 let baseUncuffed = 0;
-
                 if (state.patientType === 'neonate' || state.finalWeight < 3) {
                     if (state.finalWeight < 1) baseUncuffed = 2.5;
                     else if (state.finalWeight < 2) baseUncuffed = 3.0;
@@ -950,74 +986,46 @@
                     if (calcAge < 1) baseUncuffed = 3.5;
                     else baseUncuffed = (calcAge / 4) + 4;
                 }
-
-                // Rule: Uncuffed Max 7.0
                 if (baseUncuffed > 7.0) baseUncuffed = 7.0;
-
                 let finalSize = 0;
                 if (item.id === 'ett_uncuffed') {
                     finalSize = baseUncuffed;
                 } else {
-                    // Rule: Cuffed is half size smaller (Uncuffed - 0.5)
                     finalSize = baseUncuffed - 0.5;
                 }
-
                 els.resultValue.innerText = (Math.round(finalSize * 2) / 2).toFixed(1);
             }
             else if (item.id === 'ett_depth') {
-                // Logic based on Input Mode (Age vs Weight)
-                // Neonate Tab always uses Weight+6
                 if (state.patientType === 'neonate') {
                     els.resultValue.innerText = (state.finalWeight + 6).toFixed(1);
                     els.resultValue.classList.remove('text-3xl', 'md:text-4xl');
                     els.resultValue.classList.add('text-5xl', 'md:text-6xl');
                 } else {
-                    // Child Tab Logic
-
-                    // 1. Calculate Uncuffed Size for Size*3 formula
                     let tempUncuffed = 3.5;
                     if (calcAge >= 1) tempUncuffed = (calcAge / 4) + 4;
-                    // Neonate weight specific logic fallback if calcAge < 1 (consistent with ett logic)
                     if (calcAge < 1 && state.finalWeight > 0) {
                         if (state.finalWeight < 1) tempUncuffed = 2.5;
                         else if (state.finalWeight < 2) tempUncuffed = 3.0;
                         else tempUncuffed = 3.5;
                     }
                     if (tempUncuffed > 7.0) tempUncuffed = 7.0;
-
-                    // 2. Calculate Cuffed Size
                     let tempCuffed = tempUncuffed - 0.5;
                     if (tempCuffed < 2.0) tempCuffed = 2.0;
-
-                    // 3. Formula: Size * 3 (Default for Weight mode)
                     let depthUncuffed = (tempUncuffed * 3).toFixed(1);
                     let depthCuffed = (tempCuffed * 3).toFixed(1);
-
                     let sizeX3String = `號數x3 (U:${depthUncuffed} / C:${depthCuffed})`;
                     let displayString = sizeX3String;
-
-                    // 4. Age Formula Logic
-                    // Formula: 12 + (Age / 2)
                     if (state.inputMode === 'age') {
                         let dAge = (12 + (calcAge / 2)).toFixed(1);
-
-                        // 修改: 在年齡模式下，只顯示年齡公式結果，去除下方有氣囊/無氣囊文字
                         displayString = `年齡公式: ${dAge} `;
                     }
-
-                    // Display Result
                     els.resultValue.innerText = displayString;
-
-                    // Adjust font size for multi-line/long text
                     els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
-                    els.resultValue.classList.add('text-2xl', 'md:text-4xl'); // Use smaller font to fit
+                    els.resultValue.classList.add('text-2xl', 'md:text-4xl');
                 }
             }
-
-            // 單位由 resultUnit 顯示
             els.resultUnit.innerText = item.unit;
             els.resultDetail.innerText = note;
-
             els.infoStandard.innerText = "依病患體型換算";
             els.infoMax.innerText = "無";
             els.infoNote.innerText = note;
@@ -1046,10 +1054,7 @@
                 els.refBlade.innerText = '--';
                 return;
             }
-
             const calcAge = getCalculatedAge();
-
-            // 1. Blade
             let blade = '';
             if (state.patientType === 'neonate' || state.finalWeight < 4) blade = '0-1 (Str)';
             else if (calcAge < 2) blade = '1 (Str)';
@@ -1057,7 +1062,6 @@
             else blade = '2-3';
             els.refBlade.innerText = blade;
 
-            // 2. ETT Uncuffed
             let uncuffed = 0;
             if (state.patientType === 'neonate' || state.finalWeight < 3) {
                 if (state.finalWeight < 1) uncuffed = 2.5;
@@ -1067,40 +1071,27 @@
                 if (calcAge < 1) uncuffed = 3.5;
                 else uncuffed = (calcAge / 4) + 4;
             }
-
-            // Rule: Uncuffed Max 7.0
             if (uncuffed > 7.0) uncuffed = 7.0;
-
             const uncuffedDisplay = (Math.round(uncuffed * 2) / 2).toFixed(1);
             els.refEttUncuffed.innerText = uncuffedDisplay;
 
-            // 3. ETT Cuffed
-            // Rule: Cuffed is half size smaller (Uncuffed - 0.5)
             let cuffed = uncuffed - 0.5;
-
-            // Safety floor (though logic shouldn't hit 0)
             if (cuffed < 2.0) cuffed = 2.0;
-
             const cuffedDisplay = (Math.round(cuffed * 2) / 2).toFixed(1);
             els.refEttCuffed.innerText = cuffedDisplay;
 
-            // 4. Depth (Dual Display in Reference Section too)
             let depthStr = '';
             if (state.patientType === 'neonate') {
-                // Neonate Mode: Weight + 6
                 depthStr = (state.finalWeight + 6).toFixed(1);
                 els.refEttDepth.classList.remove('text-sm');
                 els.refEttDepth.classList.add('text-lg');
             } else {
-                // Child Mode
                 if (state.inputMode === 'age') {
-                    // Age mode: 12 + Age/2
                     let d = 12 + (calcAge / 2);
                     depthStr = d.toFixed(1);
                     els.refEttDepth.classList.remove('text-sm');
                     els.refEttDepth.classList.add('text-lg');
                 } else {
-                    // Weight mode: Size * 3
                     let dU = (uncuffed * 3).toFixed(1);
                     let dC = (cuffed * 3).toFixed(1);
                     depthStr = `U:${dU} C:${dC}`;
@@ -1111,12 +1102,11 @@
             els.refEttDepth.innerText = depthStr;
         }
 
-        // --- 5. Event Listeners ---
         function addListeners() {
             els.patientType.addEventListener('change', (e) => {
                 state.patientType = e.target.value;
                 updateInputVisibility();
-                updateRouteOptions(); // [新增] 切換病患類型時更新途徑文字 (IV/IO <-> UVC/IO)
+                updateRouteOptions();
                 calculate();
             });
 
@@ -1133,7 +1123,6 @@
 
             els.ageInput.addEventListener('input', (e) => {
                 let val = parseFloat(e.target.value);
-                // Enforce Max Age 18 logic
                 if (val > 18) {
                     val = 18;
                     e.target.value = 18;
@@ -1145,13 +1134,10 @@
 
             els.weightInput.addEventListener('input', (e) => {
                 let val = parseFloat(e.target.value);
-                
-                // [修改] 限制兒童體重輸入上限 100kg
                 if (val > 100) {
                     val = 100;
                     e.target.value = 100;
                 }
-                
                 state.weightInput = e.target.value;
                 updateStateWeight();
                 calculate();
@@ -1159,21 +1145,16 @@
 
             els.neonateWeightInput.addEventListener('input', (e) => {
                 let val = parseFloat(e.target.value);
-
-                // [新增] 限制不能輸入兩位數：若數值 >= 10，視為使用者想重新輸入，只保留最後一位數
                 if (val >= 10) {
                     const str = e.target.value;
-                    const lastChar = str.slice(-1); // 取最後輸入的數字
+                    const lastChar = str.slice(-1);
                     e.target.value = lastChar;
                     val = parseFloat(lastChar);
                 }
-
-                // [既有] 限制新生兒體重上限 5kg
                 if (val > 5) {
                     val = 5;
                     e.target.value = 5;
                 }
-                
                 state.neonateWeightInput = e.target.value;
                 updateStateWeight();
                 calculate();
@@ -1185,11 +1166,10 @@
                 calculate();
             });
 
-            // New Listener for Category
             els.reservedCategory.addEventListener('change', (e) => {
                 state.category = e.target.value;
-                updateRouteOptions(); // Filter routes based on category
-                updateInterventionUI(); // Handle UI states (overlays, specific items)
+                updateRouteOptions();
+                updateInterventionUI();
                 calculate();
             });
 
@@ -1207,7 +1187,6 @@
                 calculate();
             });
 
-            // --- Modal Logic ---
             const modal = document.getElementById('modalDisclaimer');
             const btnOpen = document.getElementById('btnDisclaimer');
             const btnClose = document.getElementById('btnCloseModal');
@@ -1225,15 +1204,12 @@
             if (btnClose) btnClose.addEventListener('click', () => toggleModal(false));
             if (btnConfirm) btnConfirm.addEventListener('click', () => toggleModal(false));
             
-            // Close on click outside
             window.addEventListener('click', (e) => {
                 if (e.target === modal) toggleModal(false);
             });
         }
 
         init();
-
     </script>
 </body>
-
 </html>
