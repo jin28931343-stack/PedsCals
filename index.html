@@ -38,6 +38,22 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+
+        /* Modal Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-animate-fade {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .modal-animate-slide {
+            animation: slideUp 0.3s ease-out;
+        }
     </style>
 </head>
 
@@ -244,10 +260,15 @@
 
     </main>
 
+    <!-- Footer with Author and Disclaimer Button -->
     <footer class="bg-gray-800 text-gray-400 py-6 mt-auto">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center md:items-end gap-4">
             <div class="text-center md:text-left">
-                <!-- [修改] 已移除左下角版權與說明文字 -->
+                <!-- [新增] 作者與免責聲明按鈕 -->
+                <p class="text-sm font-medium text-gray-300">作者: 莊進宏</p>
+                <button id="btnDisclaimer" class="text-xs text-blue-400 hover:text-blue-300 underline mt-2 block mx-auto md:mx-0">
+                    免責聲明
+                </button>
             </div>
             <div class="text-center md:text-right text-xs text-gray-500">
                 <p class="font-bold text-gray-400 mb-1">參考文獻</p>
@@ -258,6 +279,44 @@
             </div>
         </div>
     </footer>
+
+    <!-- Disclaimer Modal (Floating Window) -->
+    <div id="modalDisclaimer" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative modal-animate-slide border border-gray-200">
+            <!-- Close X Button -->
+            <button id="btnCloseModal" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <!-- Modal Content -->
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-info-circle text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">免責聲明</h3>
+            </div>
+            
+            <div class="text-gray-600 text-sm leading-relaxed space-y-3 max-h-[60vh] overflow-y-auto px-1">
+                <p class="font-medium text-gray-800">請仔細閱讀以下聲明：</p>
+                <p>1. 本工具僅供高級救護技術員緊急救護輔助參考使用，並非絕對醫療指引。</p>
+                <p>2. 雖然作者已盡力確保數據正確，但實際給藥劑量、電擊能量與器材選擇，仍請務必再次核對當前最新的醫療指引與考量病患實際臨床狀況。</p>
+                <p>3. 作者不對因使用本工具而產生的任何直接或間接損害負責。</p>
+                <p>4.使用者應自行驗證所有計算結果的正確性與適用性</p>   
+                <p>4. 使用本工具即表示您已閱讀並同意上述條款。</p>
+                <div class="bg-yellow-50 p-3 rounded text-yellow-800 text-xs border border-yellow-200 mt-2">
+                    注意：本免責聲明可能會隨時間更新，請定期查看以了解最新內容。
+                    2025/12/19
+                </div>
+            </div>
+
+            <!-- Confirm Button -->
+            <div class="mt-6">
+                <button id="btnConfirmModal" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md active:transform active:scale-95">
+                    我瞭解了
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Logic Script -->
     <script>
@@ -1121,6 +1180,29 @@
             els.specificItem.addEventListener('change', (e) => {
                 state.selectedItemId = e.target.value;
                 calculate();
+            });
+
+            // --- Modal Logic ---
+            const modal = document.getElementById('modalDisclaimer');
+            const btnOpen = document.getElementById('btnDisclaimer');
+            const btnClose = document.getElementById('btnCloseModal');
+            const btnConfirm = document.getElementById('btnConfirmModal');
+
+            function toggleModal(show) {
+                if (show) {
+                    modal.classList.remove('hidden');
+                } else {
+                    modal.classList.add('hidden');
+                }
+            }
+
+            if (btnOpen) btnOpen.addEventListener('click', () => toggleModal(true));
+            if (btnClose) btnClose.addEventListener('click', () => toggleModal(false));
+            if (btnConfirm) btnConfirm.addEventListener('click', () => toggleModal(false));
+            
+            // Close on click outside
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) toggleModal(false);
             });
         }
 
