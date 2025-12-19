@@ -288,7 +288,8 @@
                 { id: 'epi', name: 'Epinephrine (1:10000)', dose: 0.01, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.1, volUnit: 'ml/kg (1:10000)', route: ['iv_io'], max: '1 mg (Adult)', note: '心跳停止時每 3-5 分鐘給予' },
                 { id: 'epi_im', name: 'Epinephrine (1:1000)', dose: 0.01, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.01, volUnit: 'ml/kg (1:1000)', route: ['im'], max: '0.5 mg (Adult)', note: '過敏性休克使用' },
 
-                { id: 'epi_endo', name: 'Epinephrine (Endo)', dose: 0.1, unit: 'mg/kg', resultUnit: 'mg', route: ['endo'], max: '2.5 mg', note: '氣管內管給藥: 建議劑量 0.1 mg/kg (IV 劑量的 10 倍)用3~5ml生理食鹽水按壓甦醒球5次。' },
+                // [修改] 增加 volConc: 0.1 (對應 1:1000 濃度) 以顯示參考體積
+                { id: 'epi_endo', name: 'Epinephrine (Endo)', dose: 0.1, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.1, volUnit: 'ml/kg', route: ['endo'], max: '2.5 mg', note: '氣管內管給藥: 建議劑量 0.1 mg/kg (IV 劑量的 10 倍)用3~5ml生理食鹽水按壓甦醒球5次。' },
 
                 { id: 'amio', name: 'Amiodarone', dose: 5, unit: 'mg/kg', resultUnit: 'mg', volConc: 0.1, volUnit: 'ml/kg', route: ['iv_io'], max: '300 mg (Adult)', note: '可再重複兩次(總共三次)，最大總劑量 15 mg/kg' },
 
