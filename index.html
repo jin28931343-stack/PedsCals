@@ -1164,6 +1164,11 @@
         }
 
         function addListeners() {
+             // --- [新增] 鎖定右鍵 (禁止電腦右鍵或手機長按跳出選單) ---
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+            // -------------------------------------------------------
             // --- [修正] iOS PWA 強制喚醒鍵盤 (V2) ---
             // 改用 touchend 事件：這在 iOS 手機版 PWA 最為強效，手指一放開就強制鎖定游標
             const inputs = [els.ageInput, els.weightInput, els.neonateWeightInput];
@@ -1292,4 +1297,5 @@
 </body>
 
 </html>
+
 
