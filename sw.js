@@ -1,51 +1,28 @@
-const CACHE_NAME = 'pedscalc-v2';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  // 快取外部資源 (CDN)
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-  'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap'
+const CACHE_NAME = 'pedscalc-v1';
+
+// 注意：這裡的檔名必須與您的 HTML 實際檔名完全一致
+const ASSETS = [
+  './index.html',      // 主程式 (已更新)
+  './manifest.json',   // 清單檔
+  'https://cdn.tailwindcss.com', // 外部資源
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
 
-// 安裝 SW 並進行快取
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+// 安裝 Service Worker 並快取資源
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      // 如果這裡有任何一個檔案網址錯誤 (404)，整個 Service Worker 就會安裝失敗
+      return cache.addAll(ASSETS);
+    })
   );
 });
 
-// 攔截網路請求：有快取用快取，沒快取用網路
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
-});
-
-// 更新 SW 時清除舊快取
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+// 攔截請求，優先使用快取 (Offline First)
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then((response) => {
+      return response || fetch(e.request);
     })
   );
 });
