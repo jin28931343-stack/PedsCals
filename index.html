@@ -902,7 +902,7 @@
                 const resultText = results.map(v => {
                     let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
                     return parseFloat(s);
-                }).join(' / ');
+                }).join(' ~ ');
                 els.resultValue.innerText = resultText;
                 els.resultUnit.innerText = item.resultUnit;
                 const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
@@ -1213,3 +1213,4 @@
     </script>
 </body>
 </html>
+
