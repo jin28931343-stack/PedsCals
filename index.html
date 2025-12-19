@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PedsCalc 劑量換算助手</title>
-    
+
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
@@ -43,16 +43,31 @@
 
         /* Modal Animation */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
+
         .modal-animate-fade {
             animation: fadeIn 0.3s ease-out;
         }
+
         .modal-animate-slide {
             animation: slideUp 0.3s ease-out;
         }
@@ -61,13 +76,16 @@
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
@@ -85,7 +103,8 @@
             </div>
             <div class="flex items-center gap-3">
                 <!-- Install Button (Hidden by default, shown via JS) -->
-                <button id="btnInstallApp" class="hidden bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow hover:bg-blue-50 transition-colors flex items-center gap-1">
+                <button id="btnInstallApp"
+                    class="hidden bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow hover:bg-blue-50 transition-colors flex items-center gap-1">
                     <i class="fas fa-download"></i> <span class="hidden sm:inline">安裝</span>
                 </button>
                 <span class="text-xs bg-blue-800 px-2 py-1 rounded shadow-inner">v114.12.19</span>
@@ -116,7 +135,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
 
             <!-- 1. 病患類型 (Patient Type) -->
-            <div class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
+            <div
+                class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
                 <label class="block text-sm font-bold text-gray-700 mb-2">
                     <i class="fas fa-child mr-1 text-blue-500"></i> 1. 病患類型
                 </label>
@@ -128,7 +148,8 @@
             </div>
 
             <!-- 2. 體重數據 (Demographics) -->
-            <div class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
+            <div
+                class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-blue-500">
                 <label class="block text-sm font-bold text-gray-700 mb-2">
                     <i class="fas fa-weight-scale mr-1 text-blue-500"></i> 2. 年齡/體重
                 </label>
@@ -174,7 +195,8 @@
             </div>
 
             <!-- 3. 處置類型 (Intervention) -->
-            <div class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500">
+            <div
+                class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500">
                 <label class="block text-sm font-bold text-gray-700 mb-2">
                     <i class="fas fa-stethoscope mr-1 text-indigo-500"></i> 3. 處置方式
                 </label>
@@ -187,7 +209,8 @@
             </div>
 
             <!-- 4. 保留選單 (Reserved/Category) -->
-            <div class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500">
+            <div
+                class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-indigo-500">
                 <label class="block text-sm font-bold text-gray-700 mb-2">
                     <i class="fas fa-list-ul mr-1 text-indigo-500"></i> 4. 分類
                 </label>
@@ -200,7 +223,8 @@
             </div>
 
             <!-- 5. 給藥途徑 (Route) -->
-            <div class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500 relative">
+            <div
+                class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500 relative">
                 <label class="block text-sm font-bold text-gray-700 mb-2">
                     <i class="fas fa-syringe mr-1 text-purple-500"></i> 5. 給藥途徑
                 </label>
@@ -211,12 +235,14 @@
                 <!-- Overlay for disabled state -->
                 <div id="routeOverlay"
                     class="hidden absolute inset-0 bg-gray-100 bg-opacity-80 cursor-not-allowed rounded-lg z-10 flex items-center justify-center backdrop-blur-[1px]">
-                    <span class="text-gray-500 font-bold text-xs bg-white px-3 py-1.5 rounded-full shadow border">不適用</span>
+                    <span
+                        class="text-gray-500 font-bold text-xs bg-white px-3 py-1.5 rounded-full shadow border">不適用</span>
                 </div>
             </div>
 
             <!-- 6. 藥物/項目選單 (Specific Item) -->
-            <div class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500">
+            <div
+                class="step-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 border-t-4 border-t-purple-500">
                 <label id="itemLabel" class="block text-sm font-bold text-gray-700 mb-2">
                     <i class="fas fa-pills mr-1 text-purple-500"></i> 6. 選擇項目
                 </label>
@@ -230,10 +256,13 @@
 
         <!-- Result Section -->
         <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-8">
-            <div class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center bg-gradient-to-r from-gray-800 to-gray-700">
-                <h2 class="text-lg font-bold flex items-center"><i class="fas fa-calculator mr-2 text-yellow-400"></i>計算結果</h2>
+            <div
+                class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center bg-gradient-to-r from-gray-800 to-gray-700">
+                <h2 class="text-lg font-bold flex items-center"><i
+                        class="fas fa-calculator mr-2 text-yellow-400"></i>計算結果</h2>
                 <div class="text-xs md:text-sm bg-gray-900 bg-opacity-50 px-3 py-1 rounded-full">
-                    計算基礎體重: <span id="displayCalcWeight" class="font-mono font-bold text-yellow-400 text-base">0</span> kg
+                    計算基礎體重: <span id="displayCalcWeight" class="font-mono font-bold text-yellow-400 text-base">0</span>
+                    kg
                 </div>
             </div>
 
@@ -292,7 +321,7 @@
                     <div class="bg-white p-3 rounded-lg shadow-sm border border-indigo-100">
                         <span class="text-indigo-400 block text-xs uppercase font-bold mb-1">有氣囊 (Cuffed)</span>
                         <span id="refEttCuffed" class="font-bold text-2xl text-indigo-700">--</span>
-                         <span class="text-xs text-gray-400 ml-1">mm</span>
+                        <span class="text-xs text-gray-400 ml-1">mm</span>
                     </div>
                     <div class="bg-white p-3 rounded-lg shadow-sm border border-indigo-100">
                         <span class="text-indigo-400 block text-xs uppercase font-bold mb-1">深度 (Depth)</span>
@@ -314,7 +343,8 @@
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
                 <p class="text-sm font-medium text-white mb-2">作者: 莊進宏</p>
-                <button id="btnDisclaimer" class="text-xs text-blue-400 hover:text-blue-300 underline transition-colors flex items-center mx-auto md:mx-0">
+                <button id="btnDisclaimer"
+                    class="text-xs text-blue-400 hover:text-blue-300 underline transition-colors flex items-center mx-auto md:mx-0">
                     <i class="fas fa-shield-alt mr-1"></i> 免責聲明
                 </button>
             </div>
@@ -329,25 +359,29 @@
     </footer>
 
     <!-- Disclaimer Modal -->
-    <div id="modalDisclaimer" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative modal-animate-slide border border-gray-200 flex flex-col max-h-[90vh]">
-            <button id="btnCloseModal" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2">
+    <div id="modalDisclaimer"
+        class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
+        <div
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative modal-animate-slide border border-gray-200 flex flex-col max-h-[90vh]">
+            <button id="btnCloseModal"
+                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2">
                 <i class="fas fa-times text-xl"></i>
             </button>
-            
+
             <div class="text-center mb-4 flex-shrink-0">
-                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <div
+                    class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
                     <i class="fas fa-info-circle text-2xl"></i>
                 </div>
                 <h3 class="text-xl font-bold text-gray-800">免責聲明</h3>
             </div>
-            
+
             <div class="text-gray-600 text-sm leading-relaxed space-y-3 overflow-y-auto custom-scrollbar px-2">
                 <p class="font-medium text-gray-800">請仔細閱讀以下聲明：</p>
                 <p>1. 本工具僅供<span class="font-bold text-red-500">高級救護技術員</span>緊急救護輔助參考使用，並非絕對醫療指引。</p>
                 <p>2. 雖然作者已盡力確保數據正確，但實際給藥劑量、電擊能量與器材選擇，仍請務必再次核對當前最新的醫療指引與考量病患實際臨床狀況。</p>
                 <p>3. 作者不對因使用本工具而產生的任何直接或間接損害負責。</p>
-                <p>4. 使用者應自行驗證所有計算結果的正確性與適用性。</p>   
+                <p>4. 使用者應自行驗證所有計算結果的正確性與適用性。</p>
                 <p>5. 使用本工具即表示您已閱讀並同意上述條款。</p>
                 <div class="bg-yellow-50 p-3 rounded text-yellow-800 text-xs border border-yellow-200 mt-2">
                     <i class="fas fa-clock mr-1"></i> 最後更新: 2025/12/19
@@ -355,7 +389,8 @@
             </div>
 
             <div class="mt-6 flex-shrink-0">
-                <button id="btnConfirmModal" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg active:transform active:scale-95 flex items-center justify-center">
+                <button id="btnConfirmModal"
+                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg active:transform active:scale-95 flex items-center justify-center">
                     <i class="fas fa-check-circle mr-2"></i> 我瞭解了
                 </button>
             </div>
@@ -363,34 +398,43 @@
     </div>
 
     <!-- PWA Install Instruction Modal (iOS/Manual) -->
-    <div id="modalInstallInstruction" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative modal-animate-slide border border-gray-200">
-            <button id="btnCloseInstall" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2">
+    <div id="modalInstallInstruction"
+        class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center p-4 modal-animate-fade backdrop-blur-sm">
+        <div
+            class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative modal-animate-slide border border-gray-200">
+            <button id="btnCloseInstall"
+                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors p-2">
                 <i class="fas fa-times text-xl"></i>
             </button>
-            
+
             <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl">
+                <div
+                    class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-3xl">
                     <i class="fas fa-user-doctor"></i>
                 </div>
                 <h3 class="text-lg font-bold text-gray-800">安裝 PedsCalc</h3>
                 <p class="text-sm text-gray-500 mt-1">將此 App 加入主畫面以便離線使用</p>
             </div>
-            
+
             <div class="space-y-4">
                 <!-- iOS Instructions -->
                 <div id="iosInstructions" class="hidden">
                     <ol class="text-sm text-gray-600 space-y-3 leading-relaxed">
                         <li class="flex items-start">
-                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">1</span>
-                            <span>點擊瀏覽器下方的分享按鈕 <img src="https://img.icons8.com/ios/50/000000/upload--v1.png" class="w-5 h-5 inline align-middle opacity-70"></span>
+                            <span
+                                class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">1</span>
+                            <span>點擊瀏覽器下方的分享按鈕 <img src="https://img.icons8.com/ios/50/000000/upload--v1.png"
+                                    class="w-5 h-5 inline align-middle opacity-70"></span>
                         </li>
                         <li class="flex items-start">
-                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">2</span>
-                            <span>往下滑動並選擇「加入主畫面」<br><span class="text-xs text-gray-400">(Add to Home Screen)</span></span>
+                            <span
+                                class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">2</span>
+                            <span>往下滑動並選擇「加入主畫面」<br><span class="text-xs text-gray-400">(Add to Home
+                                    Screen)</span></span>
                         </li>
                         <li class="flex items-start">
-                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">3</span>
+                            <span
+                                class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">3</span>
                             <span>點擊右上角的「加入」即可。</span>
                         </li>
                     </ol>
@@ -400,11 +444,13 @@
                 <div id="androidInstructions" class="hidden">
                     <ol class="text-sm text-gray-600 space-y-3 leading-relaxed">
                         <li class="flex items-start">
-                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">1</span>
+                            <span
+                                class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">1</span>
                             <span>點擊瀏覽器右上角的選單圖示 <i class="fas fa-ellipsis-v text-gray-400 mx-1"></i></span>
                         </li>
                         <li class="flex items-start">
-                            <span class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">2</span>
+                            <span
+                                class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">2</span>
                             <span>選擇「安裝應用程式」或「加到主畫面」。</span>
                         </li>
                     </ol>
@@ -412,7 +458,8 @@
             </div>
 
             <div class="mt-6 text-center">
-                 <button id="btnCloseInstallConfirm" class="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition">
+                <button id="btnCloseInstallConfirm"
+                    class="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition">
                     關閉
                 </button>
             </div>
@@ -602,7 +649,7 @@
             }
             if (btnCloseInstall) btnCloseInstall.addEventListener('click', closeInstallModal);
             if (btnCloseInstallConfirm) btnCloseInstallConfirm.addEventListener('click', closeInstallModal);
-            
+
             // Hide button if installed
             if (isStandalone) {
                 btn.classList.add('hidden');
@@ -655,7 +702,7 @@
             const shockOption = els.interventionType.querySelector('option[value="shock"]');
             const generalOption = els.reservedCategory.querySelector('option[value="general"]');
             const sedationOption = els.reservedCategory.querySelector('option[value="sedation"]');
-            
+
             if (state.patientType === 'neonate') {
                 if (shockOption) {
                     shockOption.hidden = true;
@@ -893,7 +940,7 @@
                 els.infoStandard.innerText = "0.01 ~ 0.03 mg/kg (1:10000)";
                 els.infoMax.innerText = "無";
                 els.infoNote.innerText = item.note;
-            } 
+            }
             else if (state.patientType === 'neonate' && item.id === 'epi_endo') {
                 els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
                 els.resultValue.classList.add('text-3xl', 'md:text-4xl');
@@ -932,9 +979,9 @@
                     els.resultDetail.innerText = isCapped ? '(已達成人/最大建議劑量)' : `計算公式: ${state.finalWeight.toFixed(1)}kg × ${item.dose} ${item.unit}`;
                 }
                 if (item.id === 'epi') {
-                     els.infoStandard.innerText = `${item.dose} ${item.unit} (1:10000)`;
+                    els.infoStandard.innerText = `${item.dose} ${item.unit} (1:10000)`;
                 } else {
-                     els.infoStandard.innerText = `${item.dose} ${item.unit}`;
+                    els.infoStandard.innerText = `${item.dose} ${item.unit}`;
                 }
                 els.infoMax.innerText = item.max;
                 els.infoNote.innerText = item.note;
@@ -1123,10 +1170,15 @@
 
             els.ageInput.addEventListener('input', (e) => {
                 let val = parseFloat(e.target.value);
+                // 修改邏輯：當數值 > 18 (超過上限) 時，保留最後輸入的那一位數
+                // 這樣在手機上重新輸入時，就不會卡在 18，而是直接變成新的數字
                 if (val > 18) {
-                    val = 18;
-                    e.target.value = 18;
+                    const str = e.target.value;
+                    const lastChar = str.slice(-1);
+                    e.target.value = lastChar;
+                    val = parseFloat(lastChar);
                 }
+
                 state.age = val;
                 updateStateWeight();
                 calculate();
@@ -1135,9 +1187,12 @@
             els.weightInput.addEventListener('input', (e) => {
                 let val = parseFloat(e.target.value);
                 if (val > 100) {
-                    val = 100;
-                    e.target.value = 100;
+                    const str = e.target.value;
+                    const lastChar = str.slice(-1);
+                    e.target.value = lastChar;
+                    val = parseFloat(lastChar);
                 }
+
                 state.weightInput = e.target.value;
                 updateStateWeight();
                 calculate();
@@ -1203,7 +1258,7 @@
             if (btnOpen) btnOpen.addEventListener('click', () => toggleModal(true));
             if (btnClose) btnClose.addEventListener('click', () => toggleModal(false));
             if (btnConfirm) btnConfirm.addEventListener('click', () => toggleModal(false));
-            
+
             window.addEventListener('click', (e) => {
                 if (e.target === modal) toggleModal(false);
             });
@@ -1212,4 +1267,5 @@
         init();
     </script>
 </body>
+
 </html>
