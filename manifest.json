@@ -1,7 +1,7 @@
 {{
   "name": "PedsCalc 劑量換算",
   "short_name": "PedsCalc",
-  "start_url": "./pedscalc_app.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f3f4f6",
   "theme_color": "#2563eb",
@@ -17,4 +17,5 @@
       "type": "image/png"
     }
   ]
+
 }
