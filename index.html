@@ -121,7 +121,7 @@
                     class="hidden bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow hover:bg-blue-50 transition-colors flex items-center gap-1">
                     <i class="fas fa-download"></i> <span class="hidden sm:inline">安裝</span>
                 </button>
-                <span class="text-xs bg-blue-800 px-2 py-1 rounded shadow-inner">v114.12.19</span>
+                <span class="text-xs bg-blue-800 px-2 py-1 rounded shadow-inner">v114.12.20更新年齡體重改成下拉選單</span>
             </div>
         </div>
     </nav>
@@ -180,9 +180,10 @@
                     <!-- Input Fields -->
                     <div id="inputContainerAge">
                         <div class="relative">
-                            <input type="number" id="ageInput" max="18" min="0" placeholder="輸入歲數 (Max 18)"
-                                class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                            <span class="absolute right-3 top-2.5 text-gray-400 text-sm font-medium">歲</span>
+                            <select id="ageInput"
+                                class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white outline-none">
+                                <!-- JS populateDropdowns 將自動填充選項 -->
+                            </select>
                         </div>
                         <p class="text-xs text-gray-500 mt-2 text-right">預估體重: <span id="estWeightDisplay"
                                 class="font-bold text-blue-600 text-sm">--</span> kg</p>
@@ -190,9 +191,10 @@
 
                     <div id="inputContainerWeight" class="hidden">
                         <div class="relative">
-                            <input type="number" id="weightInput" max="100" placeholder="輸入體重 (Max 100)"
-                                class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                            <span class="absolute right-3 top-2.5 text-gray-400 text-sm font-medium">kg</span>
+                            <select id="weightInput"
+                                class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white outline-none">
+                                <!-- JS populateDropdowns 將自動填充選項 -->
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -200,9 +202,10 @@
                 <!-- Input View for Neonate -->
                 <div id="neonateInputGroup" class="hidden">
                     <div class="relative mt-2">
-                        <input type="number" id="neonateWeightInput" placeholder="輸入體重 (e.g. 3.5)"
-                            class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
-                        <span class="absolute right-3 top-2.5 text-gray-400 text-sm font-medium">kg</span>
+                        <select id="neonateWeightInput"
+                            class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white outline-none">
+                            <!-- JS populateDropdowns 將自動填充選項 -->
+                        </select>
                     </div>
                     <p class="text-xs text-gray-400 mt-2">新生兒體重上限 5kg</p>
                 </div>
@@ -574,8 +577,41 @@
         };
 
         // --- 4. Logic Functions ---
+        function populateDropdowns() {
+            // 1. Child Age: 0 - 18 歲
+            const ageSelect = document.getElementById('ageInput');
+            ageSelect.innerHTML = '<option value="" disabled selected>請選擇歲數</option>';
+            for (let i = 0; i <= 18; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.text = i + ' 歲';
+                ageSelect.appendChild(opt);
+            }
+
+            // 2. Child Weight: 1 - 100 kg
+            const weightSelect = document.getElementById('weightInput');
+            weightSelect.innerHTML = '<option value="" disabled selected>請選擇體重</option>';
+            for (let i = 1; i <= 100; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.text = i + ' kg';
+                weightSelect.appendChild(opt);
+            }
+
+            // 3. Neonate Weight: 0.1 - 5.0 kg (每 0.1 一跳)
+            const neoSelect = document.getElementById('neonateWeightInput');
+            neoSelect.innerHTML = '<option value="" disabled selected>請選擇體重</option>';
+            for (let i = 1; i <= 50; i++) {
+                const val = (i / 10).toFixed(1);
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.text = val + ' kg';
+                neoSelect.appendChild(opt);
+            }
+        }
 
         function init() {
+            populateDropdowns(); // 這一行產生下拉選單選項
             updateInputVisibility();
             updateRouteOptions();
             updateInterventionUI();
@@ -1164,7 +1200,7 @@
         }
 
         function addListeners() {
-             // --- [新增] 鎖定右鍵 (禁止電腦右鍵或手機長按跳出選單) ---
+            // --- [新增] 鎖定右鍵 (禁止電腦右鍵或手機長按跳出選單) ---
             document.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
             });
@@ -1175,7 +1211,7 @@
             inputs.forEach(input => {
                 input.addEventListener('touchend', (e) => {
                     // 防止 iOS 鍵盤彈出後又縮回，或點擊失效
-                    e.target.focus(); 
+                    e.target.focus();
                 });
             });
             els.patientType.addEventListener('change', (e) => {
@@ -1196,48 +1232,19 @@
                 calculate();
             });
 
-            els.ageInput.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                // 修改邏輯：當數值 > 18 (超過上限) 時，保留最後輸入的那一位數
-                // 這樣在手機上重新輸入時，就不會卡在 18，而是直接變成新的數字
-                if (val > 18) {
-                    const str = e.target.value;
-                    const lastChar = str.slice(-1);
-                    e.target.value = lastChar;
-                    val = parseFloat(lastChar);
-                }
-
-                state.age = val;
+            els.ageInput.addEventListener('change', (e) => {
+                state.age = parseFloat(e.target.value);
                 updateStateWeight();
                 calculate();
             });
 
-            els.weightInput.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                if (val > 100) {
-                    const str = e.target.value;
-                    const lastChar = str.slice(-1);
-                    e.target.value = lastChar;
-                    val = parseFloat(lastChar);
-                }
-
+            els.weightInput.addEventListener('change', (e) => {
                 state.weightInput = e.target.value;
                 updateStateWeight();
                 calculate();
             });
 
-            els.neonateWeightInput.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                if (val >= 10) {
-                    const str = e.target.value;
-                    const lastChar = str.slice(-1);
-                    e.target.value = lastChar;
-                    val = parseFloat(lastChar);
-                }
-                if (val > 5) {
-                    val = 5;
-                    e.target.value = 5;
-                }
+            els.neonateWeightInput.addEventListener('change', (e) => {
                 state.neonateWeightInput = e.target.value;
                 updateStateWeight();
                 calculate();
@@ -1297,5 +1304,3 @@
 </body>
 
 </html>
-
-
