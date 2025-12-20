@@ -369,8 +369,8 @@
                 <p class="font-bold text-gray-400 mb-2">參考文獻來源</p>
                 <p>2020 American Heart Association Guidelines</p>
                 <p>114年臺南市政府消防局緊急救護流程指引</p>
-                <p>胡勝川、張茵琇、張宇勳醫師 PALS與APLS精華第三版</p>
-                <p>紀煥庭醫師 新生兒及小兒急救流程圖2020</p>
+                <p>胡勝川、張茵琇、張宇勳 PALS與APLS精華第三版</p>
+                <p>紀煥庭醫師 新生兒及小兒急救流程圖</p>
             </div>
         </div>
     </footer>
@@ -753,36 +753,59 @@
             const generalOption = els.reservedCategory.querySelector('option[value="general"]');
             const sedationOption = els.reservedCategory.querySelector('option[value="sedation"]');
 
+            // 1. 針對新生兒移除「電擊」選項 (重建 innerHTML 以確保完全移除)
             if (state.patientType === 'neonate') {
-                if (shockOption) {
-                    shockOption.hidden = true;
-                    shockOption.disabled = true;
-                }
                 if (state.intervention === 'shock') {
                     state.intervention = 'medication';
-                    els.interventionType.value = 'medication';
-                    updateInterventionUI();
                 }
-
-                if (generalOption) generalOption.hidden = true;
-                if (sedationOption) sedationOption.hidden = true;
-
-                if (state.category === 'general' || state.category === 'sedation') {
-                    state.category = 'arrest';
-                    els.reservedCategory.value = 'arrest';
-                    updateRouteOptions();
-                    updateInterventionUI();
-                }
-
+                els.interventionType.innerHTML = `
+                    <option value="medication">給藥 (Medication)</option>
+                    <option value="intubation">插管 (Intubation)</option>
+                `;
+                els.interventionType.value = state.intervention;
             } else {
-                if (shockOption) {
-                    shockOption.hidden = false;
-                    shockOption.disabled = false;
-                }
-                if (generalOption) generalOption.hidden = false;
-                if (sedationOption) sedationOption.hidden = false;
+                // 兒童模式恢復完整選項
+                const currentIntervention = state.intervention;
+                els.interventionType.innerHTML = `
+                    <option value="medication">給藥 (Medication)</option>
+                    <option value="shock">電擊 (Defibrillation)</option>
+                    <option value="intubation">插管 (Intubation)</option>
+                `;
+                els.interventionType.value = currentIntervention;
             }
 
+            // 2. 針對新生兒移除「一般急救」跟「鎮靜止痛」分類 (重建 innerHTML 以確保完全移除)
+            if (state.patientType === 'neonate') {
+                // 若當前選在一般急救或鎮靜，強制切回心肺停止
+                if (state.category === 'general' || state.category === 'sedation') {
+                    state.category = 'arrest';
+                }
+                // 直接清空並只重建單一選項，避免 iOS 隱藏失效
+                els.reservedCategory.innerHTML = '<option value="arrest">心肺功能停止</option>';
+                els.reservedCategory.value = 'arrest';
+            } else {
+                // 兒童模式恢復完整分類
+                const currentCategory = state.category;
+                els.reservedCategory.innerHTML = `
+                    <option value="arrest">心肺功能停止</option>
+                    <option value="general">一般急救</option>
+                    <option value="sedation">鎮靜止痛</option>
+                `;
+                // 嘗試維持原本選擇
+                if (currentCategory === 'general' || currentCategory === 'sedation') {
+                    els.reservedCategory.value = currentCategory;
+                } else {
+                    els.reservedCategory.value = state.category;
+                }
+            }
+
+            // 確保狀態同步並更新 UI
+            if (state.patientType === 'neonate') {
+                updateRouteOptions();
+                updateInterventionUI();
+            }
+
+            // 3. 切換輸入介面 (年齡/體重欄位顯示)
             if (state.patientType === 'neonate') {
                 els.childInputGroup.classList.add('hidden');
                 els.neonateInputGroup.classList.remove('hidden');
@@ -850,458 +873,463 @@
                 updateRouteOptions();
             }
             else {
+                // 處置為給藥 (Medication) 時
                 if (els.reservedCategory.disabled) {
+                    // 從禁用狀態恢復時，需根據病患類型重建選項
                     const isNeonate = state.patientType === 'neonate';
-                    els.reservedCategory.innerHTML = `
-                        <option value="arrest">心肺功能停止</option>
-                        <option value="general" ${isNeonate ? 'hidden' : ''}>一般急救</option>
-                        <option value="sedation" ${isNeonate ? 'hidden' : ''}>鎮靜止痛</option>
+                    if (isNeonate) {
+                        els.reservedCategory.innerHTML = '<option value="arrest">心肺功能停止</option>';
+                    } else {
+                        els.reservedCategory.innerHTML = `
+                            <option value="arrest">心肺功能停止</option>
+                            <option value="general">一般急救</option>
+                            <option value="sedation">鎮靜止痛</option>
                     `;
-                    els.reservedCategory.disabled = false;
-                    els.reservedCategory.value = 'arrest';
-                    state.category = 'arrest';
-                    updateRouteOptions();
+                    }
+                        els.reservedCategory.disabled = false;
+                        els.reservedCategory.value = 'arrest';
+                        state.category = 'arrest';
+                        updateRouteOptions();
+                    }
                 }
-            }
 
-            if (state.category === 'sedation') {
-                els.routeOverlay.classList.add('hidden');
-                els.routeType.disabled = true;
-                els.itemLabel.innerText = '選擇藥物';
+                if (state.category === 'sedation') {
+                    els.routeOverlay.classList.add('hidden');
+                    els.routeType.disabled = true;
+                    els.itemLabel.innerText = '選擇藥物';
+                    populateSpecificItems();
+                    return;
+                }
+
+                if (state.intervention === 'shock' || state.intervention === 'intubation') {
+                    els.routeOverlay.classList.remove('hidden');
+                    els.routeType.disabled = true;
+                    els.itemLabel.innerText = state.intervention === 'shock' ? '選擇能量' : '選擇器材';
+                } else {
+                    els.routeOverlay.classList.add('hidden');
+                    els.routeType.disabled = false;
+                    els.itemLabel.innerText = '選擇藥物';
+                }
                 populateSpecificItems();
-                return;
             }
 
-            if (state.intervention === 'shock' || state.intervention === 'intubation') {
-                els.routeOverlay.classList.remove('hidden');
-                els.routeType.disabled = true;
-                els.itemLabel.innerText = state.intervention === 'shock' ? '選擇能量' : '選擇器材';
-            } else {
-                els.routeOverlay.classList.add('hidden');
-                els.routeType.disabled = false;
-                els.itemLabel.innerText = '選擇藥物';
-            }
-            populateSpecificItems();
-        }
-
-        function populateSpecificItems() {
-            els.specificItem.innerHTML = '';
-            if (state.category === 'sedation') {
-                els.specificItem.innerHTML = '<option value="">未開放</option>';
-                els.specificItem.disabled = true;
-                state.selectedItemId = '';
-                els.resultValue.innerText = '---';
-                els.resultDetail.innerText = '此功能尚未開放';
-                els.infoStandard.innerText = '---';
-                els.infoMax.innerText = '---';
-                els.infoNote.innerText = '---';
-                els.infoSite.parentElement.classList.add('hidden');
-                return;
-            }
-
-            if (state.category === 'general' && state.route === 'iv') {
-                els.specificItem.innerHTML = '<option value="">未開放</option>';
-                els.specificItem.disabled = true;
-                state.selectedItemId = '';
-                els.resultValue.innerText = '---';
-                els.resultDetail.innerText = '此功能尚未開放';
-                els.infoStandard.innerText = '---';
-                els.infoMax.innerText = '---';
-                els.infoNote.innerText = '---';
-                els.infoSite.parentElement.classList.add('hidden');
-                return;
-            }
-
-            els.specificItem.disabled = false;
-            let items = [];
-            if (state.intervention === 'shock') {
-                items = database.shocks;
-            } else if (state.intervention === 'intubation') {
-                items = database.intubations;
-            } else {
-                items = database.medications.filter(med => med.route.includes(state.route));
-            }
-
-            if (state.patientType === 'neonate') {
-                items = items.filter(i => i.id !== 'amio');
-            }
-
-            items.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.id;
-                opt.text = item.name;
-                els.specificItem.appendChild(opt);
-            });
-
-            if (items.length > 0) {
-                state.selectedItemId = items[0].id;
-                calculate();
-            } else {
-                state.selectedItemId = '';
-                els.resultValue.innerText = '---';
-                els.resultDetail.innerText = '此途徑無適用項目';
-            }
-        }
-
-        function calculate() {
-            updateStateWeight();
-            updateReferenceValues();
-
-            if (state.finalWeight <= 0) {
-                els.resultValue.innerText = '---';
-                els.resultDetail.innerText = '請先輸入有效的年齡或體重';
-                return;
-            }
-
-            if (!state.selectedItemId) return;
-
-            let item;
-            if (state.intervention === 'shock') {
-                item = database.shocks.find(i => i.id === state.selectedItemId);
-            } else if (state.intervention === 'intubation') {
-                item = database.intubations.find(i => i.id === state.selectedItemId);
-            } else {
-                item = database.medications.find(i => i.id === state.selectedItemId);
-            }
-
-            if (!item) return;
-
-            els.resultValue.classList.remove('text-3xl', 'text-2xl', 'md:text-4xl');
-            els.resultValue.classList.add('text-5xl', 'md:text-6xl');
-
-            if (state.intervention === 'intubation') {
-                calculateIntubation(item);
-                return;
-            }
-
-            if (state.patientType === 'neonate' && item.id === 'epi') {
-                els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
-                els.resultValue.classList.add('text-3xl', 'md:text-4xl');
-                const multipliers = [0.01, 0.02, 0.03];
-                const results = multipliers.map(m => state.finalWeight * m);
-                const resultText = results.map(v => {
-                    let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
-                    return parseFloat(s);
-                }).join(' / ');
-                els.resultValue.innerText = resultText;
-                els.resultUnit.innerText = item.resultUnit;
-                const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
-                els.resultDetail.innerText = `參考體積: ${volumes} ml (約 ${volumes} c.c.)`;
-                els.infoStandard.innerText = "0.01 ~ 0.03 mg/kg (1:10000)";
-                els.infoMax.innerText = "無";
-                els.infoNote.innerText = item.note;
-            }
-            else if (state.patientType === 'neonate' && item.id === 'epi_endo') {
-                els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
-                els.resultValue.classList.add('text-3xl', 'md:text-4xl');
-                const multipliers = [0.05, 0.1];
-                const results = multipliers.map(m => state.finalWeight * m);
-                const resultText = results.map(v => {
-                    let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
-                    return parseFloat(s);
-                }).join(' ~ ');
-                els.resultValue.innerText = resultText;
-                els.resultUnit.innerText = item.resultUnit;
-                const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
-                els.resultDetail.innerText = `參考體積: ${volumes} ml (約 ${volumes} c.c.)`;
-                els.infoStandard.innerText = "0.05mg/kg~0.1mg/kg(1:10000)";
-                els.infoMax.innerText = "無";
-                els.infoNote.innerText = "氣管內管給藥";
-            }
-            else {
-                let val = state.finalWeight * item.dose;
-                let isCapped = false;
-                let maxVal = parseFloat(item.max);
-                if (!isNaN(maxVal) && val > maxVal) {
-                    val = maxVal;
-                    isCapped = true;
+            function populateSpecificItems() {
+                els.specificItem.innerHTML = '';
+                if (state.category === 'sedation') {
+                    els.specificItem.innerHTML = '<option value="">未開放</option>';
+                    els.specificItem.disabled = true;
+                    state.selectedItemId = '';
+                    els.resultValue.innerText = '---';
+                    els.resultDetail.innerText = '此功能尚未開放';
+                    els.infoStandard.innerText = '---';
+                    els.infoMax.innerText = '---';
+                    els.infoNote.innerText = '---';
+                    els.infoSite.parentElement.classList.add('hidden');
+                    return;
                 }
-                let displayVal = val < 1 ? val.toFixed(2) : val.toFixed(1);
-                if (Number.isInteger(parseFloat(displayVal))) {
-                    displayVal = parseInt(displayVal);
+
+                if (state.category === 'general' && state.route === 'iv') {
+                    els.specificItem.innerHTML = '<option value="">未開放</option>';
+                    els.specificItem.disabled = true;
+                    state.selectedItemId = '';
+                    els.resultValue.innerText = '---';
+                    els.resultDetail.innerText = '此功能尚未開放';
+                    els.infoStandard.innerText = '---';
+                    els.infoMax.innerText = '---';
+                    els.infoNote.innerText = '---';
+                    els.infoSite.parentElement.classList.add('hidden');
+                    return;
                 }
-                els.resultValue.innerText = displayVal;
-                els.resultUnit.innerText = item.resultUnit;
-                if (state.intervention === 'medication' && item.volConc) {
-                    let vol = (val / (item.dose / item.volConc)).toFixed(1);
-                    els.resultDetail.innerText = `參考體積: 約 ${vol} ml (約 ${vol} c.c.)`;
+
+                els.specificItem.disabled = false;
+                let items = [];
+                if (state.intervention === 'shock') {
+                    items = database.shocks;
+                } else if (state.intervention === 'intubation') {
+                    items = database.intubations;
                 } else {
-                    els.resultDetail.innerText = isCapped ? '(已達成人/最大建議劑量)' : `計算公式: ${state.finalWeight.toFixed(1)}kg × ${item.dose} ${item.unit}`;
+                    items = database.medications.filter(med => med.route.includes(state.route));
                 }
-                if (item.id === 'epi') {
-                    els.infoStandard.innerText = `${item.dose} ${item.unit} (1:10000)`;
-                } else {
-                    els.infoStandard.innerText = `${item.dose} ${item.unit}`;
-                }
-                els.infoMax.innerText = item.max;
-                els.infoNote.innerText = item.note;
-            }
 
-            if (state.intervention === 'shock') {
-                els.infoSite.innerText = "使用兒童貼片，若無則使用大人貼片 (前胸後背)";
-                els.infoSite.parentElement.classList.remove('hidden');
-            } else if (state.route === 'im') {
-                els.infoSite.innerText = "第一優先:大腿前外側肌 / 第二優先:肩峰下三指幅三角肌";
-                els.infoSite.parentElement.classList.remove('hidden');
-            } else if (state.route === 'iv_io') {
                 if (state.patientType === 'neonate') {
-                    els.infoSite.innerText = "UVC / IO (Distal femur / 遠端股骨、Proximal tibia / 近端脛骨、Distal tibia / 遠端脛骨。)";
-                } else {
-                    els.infoSite.innerText = "IV / IO (Distal femur / 遠端股骨、Proximal tibia / 近端脛骨、Distal tibia / 遠端脛骨。)";
+                    items = items.filter(i => i.id !== 'amio');
                 }
-                els.infoSite.parentElement.classList.remove('hidden');
-            } else if (state.route === 'endo') {
-                els.infoSite.innerText = "氣管內管 (ETT)";
-                els.infoSite.parentElement.classList.remove('hidden');
-            } else {
-                els.infoSite.parentElement.classList.add('hidden');
-            }
-        }
 
-        function calculateIntubation(item) {
-            let result = '';
-            let note = item.note;
-            if (state.patientType === 'neonate' && item.id === 'ett_depth') {
-                note = "1.體重+6。2.鼻耳(鼻中膈-耳屏+1cm)。";
-            }
-            const calcAge = getCalculatedAge();
+                items.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.text = item.name;
+                    els.specificItem.appendChild(opt);
+                });
 
-            if (item.id === 'blade') {
-                if (state.patientType === 'neonate' || state.finalWeight < 4) result = '0 - 1 (Straight)';
-                else if (calcAge < 2) result = '1 (Straight)';
-                else if (calcAge < 5) result = '1.5 - 2';
-                else result = '2 - 3';
-                els.resultValue.innerText = result;
-            }
-            else if (item.id.includes('ett') && !item.id.includes('depth')) {
-                let baseUncuffed = 0;
-                if (state.patientType === 'neonate' || state.finalWeight < 3) {
-                    if (state.finalWeight < 1) baseUncuffed = 2.5;
-                    else if (state.finalWeight < 2) baseUncuffed = 3.0;
-                    else baseUncuffed = 3.5;
+                if (items.length > 0) {
+                    state.selectedItemId = items[0].id;
+                    calculate();
                 } else {
-                    if (calcAge < 1) baseUncuffed = 3.5;
-                    else baseUncuffed = (calcAge / 4) + 4;
+                    state.selectedItemId = '';
+                    els.resultValue.innerText = '---';
+                    els.resultDetail.innerText = '此途徑無適用項目';
                 }
-                if (baseUncuffed > 7.0) baseUncuffed = 7.0;
-                let finalSize = 0;
-                if (item.id === 'ett_uncuffed') {
-                    finalSize = baseUncuffed;
-                } else {
-                    finalSize = baseUncuffed - 0.5;
-                }
-                els.resultValue.innerText = (Math.round(finalSize * 2) / 2).toFixed(1);
             }
-            else if (item.id === 'ett_depth') {
-                if (state.patientType === 'neonate') {
-                    els.resultValue.innerText = (state.finalWeight + 6).toFixed(1);
-                    els.resultValue.classList.remove('text-3xl', 'md:text-4xl');
-                    els.resultValue.classList.add('text-5xl', 'md:text-6xl');
+
+            function calculate() {
+                updateStateWeight();
+                updateReferenceValues();
+
+                if (state.finalWeight <= 0) {
+                    els.resultValue.innerText = '---';
+                    els.resultDetail.innerText = '請先輸入有效的年齡或體重';
+                    return;
+                }
+
+                if (!state.selectedItemId) return;
+
+                let item;
+                if (state.intervention === 'shock') {
+                    item = database.shocks.find(i => i.id === state.selectedItemId);
+                } else if (state.intervention === 'intubation') {
+                    item = database.intubations.find(i => i.id === state.selectedItemId);
                 } else {
-                    let tempUncuffed = 3.5;
-                    if (calcAge >= 1) tempUncuffed = (calcAge / 4) + 4;
-                    if (calcAge < 1 && state.finalWeight > 0) {
-                        if (state.finalWeight < 1) tempUncuffed = 2.5;
-                        else if (state.finalWeight < 2) tempUncuffed = 3.0;
-                        else tempUncuffed = 3.5;
-                    }
-                    if (tempUncuffed > 7.0) tempUncuffed = 7.0;
-                    let tempCuffed = tempUncuffed - 0.5;
-                    if (tempCuffed < 2.0) tempCuffed = 2.0;
-                    let depthUncuffed = (tempUncuffed * 3).toFixed(1);
-                    let depthCuffed = (tempCuffed * 3).toFixed(1);
-                    let sizeX3String = `號數x3 (U:${depthUncuffed} / C:${depthCuffed})`;
-                    let displayString = sizeX3String;
-                    if (state.inputMode === 'age') {
-                        let dAge = (12 + (calcAge / 2)).toFixed(1);
-                        displayString = `年齡公式: ${dAge} `;
-                    }
-                    els.resultValue.innerText = displayString;
+                    item = database.medications.find(i => i.id === state.selectedItemId);
+                }
+
+                if (!item) return;
+
+                els.resultValue.classList.remove('text-3xl', 'text-2xl', 'md:text-4xl');
+                els.resultValue.classList.add('text-5xl', 'md:text-6xl');
+
+                if (state.intervention === 'intubation') {
+                    calculateIntubation(item);
+                    return;
+                }
+
+                if (state.patientType === 'neonate' && item.id === 'epi') {
                     els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
-                    els.resultValue.classList.add('text-2xl', 'md:text-4xl');
+                    els.resultValue.classList.add('text-3xl', 'md:text-4xl');
+                    const multipliers = [0.01, 0.02, 0.03];
+                    const results = multipliers.map(m => state.finalWeight * m);
+                    const resultText = results.map(v => {
+                        let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
+                        return parseFloat(s);
+                    }).join(' / ');
+                    els.resultValue.innerText = resultText;
+                    els.resultUnit.innerText = item.resultUnit;
+                    const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
+                    els.resultDetail.innerText = `參考體積: ${volumes} ml (約 ${volumes} c.c.)`;
+                    els.infoStandard.innerText = "0.01 ~ 0.03 mg/kg (1:10000)";
+                    els.infoMax.innerText = "無";
+                    els.infoNote.innerText = item.note;
+                }
+                else if (state.patientType === 'neonate' && item.id === 'epi_endo') {
+                    els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
+                    els.resultValue.classList.add('text-3xl', 'md:text-4xl');
+                    const multipliers = [0.05, 0.1];
+                    const results = multipliers.map(m => state.finalWeight * m);
+                    const resultText = results.map(v => {
+                        let s = v < 1 ? v.toFixed(2) : v.toFixed(1);
+                        return parseFloat(s);
+                    }).join(' ~ ');
+                    els.resultValue.innerText = resultText;
+                    els.resultUnit.innerText = item.resultUnit;
+                    const volumes = results.map(v => (v / 0.1).toFixed(1)).join(' / ');
+                    els.resultDetail.innerText = `參考體積: ${volumes} ml (約 ${volumes} c.c.)`;
+                    els.infoStandard.innerText = "0.05mg/kg~0.1mg/kg(1:10000)";
+                    els.infoMax.innerText = "無";
+                    els.infoNote.innerText = "氣管內管給藥";
+                }
+                else {
+                    let val = state.finalWeight * item.dose;
+                    let isCapped = false;
+                    let maxVal = parseFloat(item.max);
+                    if (!isNaN(maxVal) && val > maxVal) {
+                        val = maxVal;
+                        isCapped = true;
+                    }
+                    let displayVal = val < 1 ? val.toFixed(2) : val.toFixed(1);
+                    if (Number.isInteger(parseFloat(displayVal))) {
+                        displayVal = parseInt(displayVal);
+                    }
+                    els.resultValue.innerText = displayVal;
+                    els.resultUnit.innerText = item.resultUnit;
+                    if (state.intervention === 'medication' && item.volConc) {
+                        let vol = (val / (item.dose / item.volConc)).toFixed(1);
+                        els.resultDetail.innerText = `參考體積: 約 ${vol} ml (約 ${vol} c.c.)`;
+                    } else {
+                        els.resultDetail.innerText = isCapped ? '(已達成人/最大建議劑量)' : `計算公式: ${state.finalWeight.toFixed(1)}kg × ${item.dose} ${item.unit}`;
+                    }
+                    if (item.id === 'epi') {
+                        els.infoStandard.innerText = `${item.dose} ${item.unit} (1:10000)`;
+                    } else {
+                        els.infoStandard.innerText = `${item.dose} ${item.unit}`;
+                    }
+                    els.infoMax.innerText = item.max;
+                    els.infoNote.innerText = item.note;
+                }
+
+                if (state.intervention === 'shock') {
+                    els.infoSite.innerText = "使用兒童貼片，若無則使用大人貼片 (前胸後背)";
+                    els.infoSite.parentElement.classList.remove('hidden');
+                } else if (state.route === 'im') {
+                    els.infoSite.innerText = "第一優先:大腿前外側肌 / 第二優先:肩峰下三指幅三角肌";
+                    els.infoSite.parentElement.classList.remove('hidden');
+                } else if (state.route === 'iv_io') {
+                    if (state.patientType === 'neonate') {
+                        els.infoSite.innerText = "UVC / IO (Distal femur / 遠端股骨、Proximal tibia / 近端脛骨、Distal tibia / 遠端脛骨。)";
+                    } else {
+                        els.infoSite.innerText = "IV / IO (Distal femur / 遠端股骨、Proximal tibia / 近端脛骨、Distal tibia / 遠端脛骨。)";
+                    }
+                    els.infoSite.parentElement.classList.remove('hidden');
+                } else if (state.route === 'endo') {
+                    els.infoSite.innerText = "氣管內管 (ETT)";
+                    els.infoSite.parentElement.classList.remove('hidden');
+                } else {
+                    els.infoSite.parentElement.classList.add('hidden');
                 }
             }
-            els.resultUnit.innerText = item.unit;
-            els.resultDetail.innerText = note;
-            els.infoStandard.innerText = "依病患體型換算";
-            els.infoMax.innerText = "無";
-            els.infoNote.innerText = note;
-            els.infoSite.parentElement.classList.add('hidden');
-        }
 
-        function getCalculatedAge() {
-            let calcAge = 0;
-            if (state.patientType === 'neonate') {
-                calcAge = 0;
-            } else if (state.inputMode === 'age' && state.age) {
-                calcAge = parseFloat(state.age);
-            } else {
-                if (state.finalWeight < 10) calcAge = 0.5;
-                else calcAge = (state.finalWeight / 2) - 4;
-                if (calcAge < 0) calcAge = 0;
+            function calculateIntubation(item) {
+                let result = '';
+                let note = item.note;
+                if (state.patientType === 'neonate' && item.id === 'ett_depth') {
+                    note = "1.體重+6。2.鼻耳(鼻中膈-耳屏+1cm)。";
+                }
+                const calcAge = getCalculatedAge();
+
+                if (item.id === 'blade') {
+                    if (state.patientType === 'neonate' || state.finalWeight < 4) result = '0 - 1 (Straight)';
+                    else if (calcAge < 2) result = '1 (Straight)';
+                    else if (calcAge < 5) result = '1.5 - 2';
+                    else result = '2 - 3';
+                    els.resultValue.innerText = result;
+                }
+                else if (item.id.includes('ett') && !item.id.includes('depth')) {
+                    let baseUncuffed = 0;
+                    if (state.patientType === 'neonate' || state.finalWeight < 3) {
+                        if (state.finalWeight < 1) baseUncuffed = 2.5;
+                        else if (state.finalWeight < 2) baseUncuffed = 3.0;
+                        else baseUncuffed = 3.5;
+                    } else {
+                        if (calcAge < 1) baseUncuffed = 3.5;
+                        else baseUncuffed = (calcAge / 4) + 4;
+                    }
+                    if (baseUncuffed > 7.0) baseUncuffed = 7.0;
+                    let finalSize = 0;
+                    if (item.id === 'ett_uncuffed') {
+                        finalSize = baseUncuffed;
+                    } else {
+                        finalSize = baseUncuffed - 0.5;
+                    }
+                    els.resultValue.innerText = (Math.round(finalSize * 2) / 2).toFixed(1);
+                }
+                else if (item.id === 'ett_depth') {
+                    if (state.patientType === 'neonate') {
+                        els.resultValue.innerText = (state.finalWeight + 6).toFixed(1);
+                        els.resultValue.classList.remove('text-3xl', 'md:text-4xl');
+                        els.resultValue.classList.add('text-5xl', 'md:text-6xl');
+                    } else {
+                        let tempUncuffed = 3.5;
+                        if (calcAge >= 1) tempUncuffed = (calcAge / 4) + 4;
+                        if (calcAge < 1 && state.finalWeight > 0) {
+                            if (state.finalWeight < 1) tempUncuffed = 2.5;
+                            else if (state.finalWeight < 2) tempUncuffed = 3.0;
+                            else tempUncuffed = 3.5;
+                        }
+                        if (tempUncuffed > 7.0) tempUncuffed = 7.0;
+                        let tempCuffed = tempUncuffed - 0.5;
+                        if (tempCuffed < 2.0) tempCuffed = 2.0;
+                        let depthUncuffed = (tempUncuffed * 3).toFixed(1);
+                        let depthCuffed = (tempCuffed * 3).toFixed(1);
+                        let sizeX3String = `號數x3 (U:${depthUncuffed} / C:${depthCuffed})`;
+                        let displayString = sizeX3String;
+                        if (state.inputMode === 'age') {
+                            let dAge = (12 + (calcAge / 2)).toFixed(1);
+                            displayString = `年齡公式: ${dAge} `;
+                        }
+                        els.resultValue.innerText = displayString;
+                        els.resultValue.classList.remove('text-5xl', 'md:text-6xl');
+                        els.resultValue.classList.add('text-2xl', 'md:text-4xl');
+                    }
+                }
+                els.resultUnit.innerText = item.unit;
+                els.resultDetail.innerText = note;
+                els.infoStandard.innerText = "依病患體型換算";
+                els.infoMax.innerText = "無";
+                els.infoNote.innerText = note;
+                els.infoSite.parentElement.classList.add('hidden');
             }
-            return calcAge;
-        }
 
-        function updateReferenceValues() {
-            if (state.finalWeight <= 0) {
-                els.refEttUncuffed.innerText = '--';
-                els.refEttCuffed.innerText = '--';
-                els.refEttDepth.innerText = '--';
-                els.refBlade.innerText = '--';
-                return;
+            function getCalculatedAge() {
+                let calcAge = 0;
+                if (state.patientType === 'neonate') {
+                    calcAge = 0;
+                } else if (state.inputMode === 'age' && state.age) {
+                    calcAge = parseFloat(state.age);
+                } else {
+                    if (state.finalWeight < 10) calcAge = 0.5;
+                    else calcAge = (state.finalWeight / 2) - 4;
+                    if (calcAge < 0) calcAge = 0;
+                }
+                return calcAge;
             }
-            const calcAge = getCalculatedAge();
-            let blade = '';
-            if (state.patientType === 'neonate' || state.finalWeight < 4) blade = '0-1 (Str)';
-            else if (calcAge < 2) blade = '1 (Str)';
-            else if (calcAge < 5) blade = '1.5-2';
-            else blade = '2-3';
-            els.refBlade.innerText = blade;
 
-            let uncuffed = 0;
-            if (state.patientType === 'neonate' || state.finalWeight < 3) {
-                if (state.finalWeight < 1) uncuffed = 2.5;
-                else if (state.finalWeight < 2) uncuffed = 3.0;
-                else uncuffed = 3.5;
-            } else {
-                if (calcAge < 1) uncuffed = 3.5;
-                else uncuffed = (calcAge / 4) + 4;
-            }
-            if (uncuffed > 7.0) uncuffed = 7.0;
-            const uncuffedDisplay = (Math.round(uncuffed * 2) / 2).toFixed(1);
-            els.refEttUncuffed.innerText = uncuffedDisplay;
+            function updateReferenceValues() {
+                if (state.finalWeight <= 0) {
+                    els.refEttUncuffed.innerText = '--';
+                    els.refEttCuffed.innerText = '--';
+                    els.refEttDepth.innerText = '--';
+                    els.refBlade.innerText = '--';
+                    return;
+                }
+                const calcAge = getCalculatedAge();
+                let blade = '';
+                if (state.patientType === 'neonate' || state.finalWeight < 4) blade = '0-1 (Str)';
+                else if (calcAge < 2) blade = '1 (Str)';
+                else if (calcAge < 5) blade = '1.5-2';
+                else blade = '2-3';
+                els.refBlade.innerText = blade;
 
-            let cuffed = uncuffed - 0.5;
-            if (cuffed < 2.0) cuffed = 2.0;
-            const cuffedDisplay = (Math.round(cuffed * 2) / 2).toFixed(1);
-            els.refEttCuffed.innerText = cuffedDisplay;
+                let uncuffed = 0;
+                if (state.patientType === 'neonate' || state.finalWeight < 3) {
+                    if (state.finalWeight < 1) uncuffed = 2.5;
+                    else if (state.finalWeight < 2) uncuffed = 3.0;
+                    else uncuffed = 3.5;
+                } else {
+                    if (calcAge < 1) uncuffed = 3.5;
+                    else uncuffed = (calcAge / 4) + 4;
+                }
+                if (uncuffed > 7.0) uncuffed = 7.0;
+                const uncuffedDisplay = (Math.round(uncuffed * 2) / 2).toFixed(1);
+                els.refEttUncuffed.innerText = uncuffedDisplay;
 
-            let depthStr = '';
-            if (state.patientType === 'neonate') {
-                depthStr = (state.finalWeight + 6).toFixed(1);
-                els.refEttDepth.classList.remove('text-sm');
-                els.refEttDepth.classList.add('text-lg');
-            } else {
-                if (state.inputMode === 'age') {
-                    let d = 12 + (calcAge / 2);
-                    depthStr = d.toFixed(1);
+                let cuffed = uncuffed - 0.5;
+                if (cuffed < 2.0) cuffed = 2.0;
+                const cuffedDisplay = (Math.round(cuffed * 2) / 2).toFixed(1);
+                els.refEttCuffed.innerText = cuffedDisplay;
+
+                let depthStr = '';
+                if (state.patientType === 'neonate') {
+                    depthStr = (state.finalWeight + 6).toFixed(1);
                     els.refEttDepth.classList.remove('text-sm');
                     els.refEttDepth.classList.add('text-lg');
                 } else {
-                    let dU = (uncuffed * 3).toFixed(1);
-                    let dC = (cuffed * 3).toFixed(1);
-                    depthStr = `U:${dU} C:${dC}`;
-                    els.refEttDepth.classList.remove('text-lg');
-                    els.refEttDepth.classList.add('text-sm');
+                    if (state.inputMode === 'age') {
+                        let d = 12 + (calcAge / 2);
+                        depthStr = d.toFixed(1);
+                        els.refEttDepth.classList.remove('text-sm');
+                        els.refEttDepth.classList.add('text-lg');
+                    } else {
+                        let dU = (uncuffed * 3).toFixed(1);
+                        let dC = (cuffed * 3).toFixed(1);
+                        depthStr = `U:${dU} C:${dC}`;
+                        els.refEttDepth.classList.remove('text-lg');
+                        els.refEttDepth.classList.add('text-sm');
+                    }
                 }
+                els.refEttDepth.innerText = depthStr;
             }
-            els.refEttDepth.innerText = depthStr;
-        }
 
-        function addListeners() {
-            // --- [新增] 鎖定右鍵 (禁止電腦右鍵或手機長按跳出選單) ---
-            document.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-            });
-            // -------------------------------------------------------
-            // --- [修正] iOS PWA 強制喚醒鍵盤 (V2) ---
-            // 改用 touchend 事件：這在 iOS 手機版 PWA 最為強效，手指一放開就強制鎖定游標
-            const inputs = [els.ageInput, els.weightInput, els.neonateWeightInput];
-            inputs.forEach(input => {
-                input.addEventListener('touchend', (e) => {
-                    // 防止 iOS 鍵盤彈出後又縮回，或點擊失效
-                    e.target.focus();
+            function addListeners() {
+                // --- [新增] 鎖定右鍵 (禁止電腦右鍵或手機長按跳出選單) ---
+                document.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
                 });
-            });
-            els.patientType.addEventListener('change', (e) => {
-                state.patientType = e.target.value;
-                updateInputVisibility();
-                updateRouteOptions();
-                calculate();
-            });
+                // -------------------------------------------------------
+                // --- [修正] iOS PWA 強制喚醒鍵盤 (V2) ---
+                // 改用 touchend 事件：這在 iOS 手機版 PWA 最為強效，手指一放開就強制鎖定游標
+                const inputs = [els.ageInput, els.weightInput, els.neonateWeightInput];
+                inputs.forEach(input => {
+                    input.addEventListener('touchend', (e) => {
+                        // 防止 iOS 鍵盤彈出後又縮回，或點擊失效
+                        e.target.focus();
+                    });
+                });
+                els.patientType.addEventListener('change', (e) => {
+                    state.patientType = e.target.value;
+                    updateInputVisibility();
+                    updateRouteOptions();
+                    calculate();
+                });
 
-            els.btnModeAge.addEventListener('click', () => {
-                state.inputMode = 'age';
-                updateInputVisibility();
-                calculate();
-            });
-            els.btnModeWeight.addEventListener('click', () => {
-                state.inputMode = 'weight';
-                updateInputVisibility();
-                calculate();
-            });
+                els.btnModeAge.addEventListener('click', () => {
+                    state.inputMode = 'age';
+                    updateInputVisibility();
+                    calculate();
+                });
+                els.btnModeWeight.addEventListener('click', () => {
+                    state.inputMode = 'weight';
+                    updateInputVisibility();
+                    calculate();
+                });
 
-            els.ageInput.addEventListener('change', (e) => {
-                state.age = parseFloat(e.target.value);
-                updateStateWeight();
-                calculate();
-            });
+                els.ageInput.addEventListener('change', (e) => {
+                    state.age = parseFloat(e.target.value);
+                    updateStateWeight();
+                    calculate();
+                });
 
-            els.weightInput.addEventListener('change', (e) => {
-                state.weightInput = e.target.value;
-                updateStateWeight();
-                calculate();
-            });
+                els.weightInput.addEventListener('change', (e) => {
+                    state.weightInput = e.target.value;
+                    updateStateWeight();
+                    calculate();
+                });
 
-            els.neonateWeightInput.addEventListener('change', (e) => {
-                state.neonateWeightInput = e.target.value;
-                updateStateWeight();
-                calculate();
-            });
+                els.neonateWeightInput.addEventListener('change', (e) => {
+                    state.neonateWeightInput = e.target.value;
+                    updateStateWeight();
+                    calculate();
+                });
 
-            els.interventionType.addEventListener('change', (e) => {
-                state.intervention = e.target.value;
-                updateInterventionUI();
-                calculate();
-            });
+                els.interventionType.addEventListener('change', (e) => {
+                    state.intervention = e.target.value;
+                    updateInterventionUI();
+                    calculate();
+                });
 
-            els.reservedCategory.addEventListener('change', (e) => {
-                state.category = e.target.value;
-                updateRouteOptions();
-                updateInterventionUI();
-                calculate();
-            });
+                els.reservedCategory.addEventListener('change', (e) => {
+                    state.category = e.target.value;
+                    updateRouteOptions();
+                    updateInterventionUI();
+                    calculate();
+                });
 
-            els.routeType.addEventListener('change', (e) => {
-                state.route = e.target.value;
-                updateInterventionUI();
-                if (els.specificItem.options.length > 0) {
-                    state.selectedItemId = els.specificItem.options[0].value;
+                els.routeType.addEventListener('change', (e) => {
+                    state.route = e.target.value;
+                    updateInterventionUI();
+                    if (els.specificItem.options.length > 0) {
+                        state.selectedItemId = els.specificItem.options[0].value;
+                    }
+                    calculate();
+                });
+
+                els.specificItem.addEventListener('change', (e) => {
+                    state.selectedItemId = e.target.value;
+                    calculate();
+                });
+
+                const modal = document.getElementById('modalDisclaimer');
+                const btnOpen = document.getElementById('btnDisclaimer');
+                const btnClose = document.getElementById('btnCloseModal');
+                const btnConfirm = document.getElementById('btnConfirmModal');
+
+                function toggleModal(show) {
+                    if (show) {
+                        modal.classList.remove('hidden');
+                    } else {
+                        modal.classList.add('hidden');
+                    }
                 }
-                calculate();
-            });
 
-            els.specificItem.addEventListener('change', (e) => {
-                state.selectedItemId = e.target.value;
-                calculate();
-            });
+                if (btnOpen) btnOpen.addEventListener('click', () => toggleModal(true));
+                if (btnClose) btnClose.addEventListener('click', () => toggleModal(false));
+                if (btnConfirm) btnConfirm.addEventListener('click', () => toggleModal(false));
 
-            const modal = document.getElementById('modalDisclaimer');
-            const btnOpen = document.getElementById('btnDisclaimer');
-            const btnClose = document.getElementById('btnCloseModal');
-            const btnConfirm = document.getElementById('btnConfirmModal');
-
-            function toggleModal(show) {
-                if (show) {
-                    modal.classList.remove('hidden');
-                } else {
-                    modal.classList.add('hidden');
-                }
+                window.addEventListener('click', (e) => {
+                    if (e.target === modal) toggleModal(false);
+                });
             }
 
-            if (btnOpen) btnOpen.addEventListener('click', () => toggleModal(true));
-            if (btnClose) btnClose.addEventListener('click', () => toggleModal(false));
-            if (btnConfirm) btnConfirm.addEventListener('click', () => toggleModal(false));
-
-            window.addEventListener('click', (e) => {
-                if (e.target === modal) toggleModal(false);
-            });
-        }
-
-        init();
+            init();
     </script>
 </body>
 
 </html>
-
