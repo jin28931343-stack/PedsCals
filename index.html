@@ -29,7 +29,37 @@
                 </a>
                 
                 </div>
-        </div>
+      <p class="mt-4 text-xs text-gray-400">
+            系統將在 <span id="redirect-timer" class="text-blue-500 font-bold text-base">10</span> 秒後自動跳轉
+        </p>
     </div>
+</div>
+
+<script>
+    (function() {
+        // 設定倒數秒數
+        var seconds = 10;
+        // 設定新網址
+        var targetUrl = "https://pedscalc.web.app/";
+        
+        var timerElement = document.getElementById('redirect-timer');
+        
+        // 啟動計時器
+        var countdownInterval = setInterval(function() {
+            seconds--;
+            // 更新畫面上的數字
+            if(timerElement) {
+                timerElement.textContent = seconds;
+            }
+            
+            // 倒數結束，執行跳轉
+            if (seconds <= 0) {
+                clearInterval(countdownInterval);
+                window.location.href = targetUrl;
+            }
+        }, 1000); // 每 1000 毫秒 (1秒) 執行一次
+    })();
+</script>
 </body>
+
 </html>
